@@ -26,13 +26,36 @@ body {
     left: 10%;
     width: 80%;
     height: 40%; 
-    
+    backdrop-filter: blur(8px);
  
     background-color: rgba(0, 0, 0, 0.55); 
     border: 1px solid rgba(255, 255, 255, 0.1); 
     border-radius: 10px; 
     padding: 20px;
     box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2); 
+}
+
+.category-header {
+    font-size: 1.5em; 
+    font-weight: bold;
+    color: #00bcd4; 
+    border-bottom: 2px solid #00bcd4;
+    padding-bottom: 5px;
+    margin-bottom: 15px;
+}
+
+.symbol {
+    font-weight: bold;
+    color: #eee;
+    flex-basis: 30%; 
+
+}
+
+.change {
+    flex-basis: 30%; 
+    text-align: right;
+    font-weight: bold;
+
 }
 
 
@@ -51,5 +74,8 @@ body {
     text-align: right;
 }
 
+.item:last-child {
+    border-bottom: none; 
+}
 
 
