@@ -4,12 +4,69 @@ const xrpElement = document.getElementById('xrp');
 const usdElement = document.getElementById('usd');
 const goldElement = document.getElementById('gold');
 
-
+//buraya bool bir liste koyup tüm değerlerin ilk değerlerinin çekilmesini sağlıyıcam
 let initialDataLoaded = false;
 
-//burayı ileride bir txt den çakeicem herkes kendi apisini oluşurup txt ye atsın
-const ALPHA_VANTAGE_API_KEY = '';//burayı vermiyicem 500 api istek sınırı var
+//burayı ileride bir txt den çakeicem herkes kendi apisini oluşurup txt ye atacak
+//txt live serverda gözükmüyo jon aldım
+let ALPHA_VANTAGE_API_KEY = '';//burayı vermiyicem 500 api istek sınırı var
 
+async function loadApiKey() {
+console.log("API_Key.json okunuyor..."); 
+    try {
+        const response = await fetch('api_key.json'); 
+
+        if (!response.ok) {
+            console.error(`api_key.json dosyası bulunamadı veya erişilemedi: ${response.status} ${response.statusText}`);
+            return null;
+        }
+
+        const jsonData = await response.json(); 
+
+        if (jsonData && jsonData.api_key && typeof jsonData.api_key === 'string' && jsonData.api_key.trim().length > 1) {
+            ALPHA_VANTAGE_API_KEY = jsonData.api_key.trim(); 
+            console.log("API Anahtarı başarıyla okundu.");
+            return ALPHA_VANTAGE_API_KEY;
+        } else {
+            console.error("api_key.json dosyası boş veya 'api_key' anahtarı içermiyor.");
+            return null;
+        }
+
+    } catch (hata) {
+        console.error('api_key.json okuma hatası:', hata);
+        return null;
+    }
+}
+
+function updateDisplay(element, price, change) {
+    element.querySelector('.price').innerText = `$${price.toLocaleString('en-US')}`;
+
+    const changeElement = element.querySelector('.change');
+    changeElement.innerText = `${change.toFixed(2)}%`;
+
+    if (change > 0) {
+        changeElement.className = 'change increase'; //yeşil
+    } else if (change < 0) {
+        changeElement.className = 'change decrease'; //kırmızı
+    } else {
+        changeElement.className = 'change'; //nötr
+    }
+}
+
+function showErrorMessagesForElement(targetElement) {
+ 
+    targetElement.querySelector('.price').innerText = "Verilere ulaşılamadı";
+    targetElement.querySelector('.change').innerText = ""; 
+    targetElement.querySelector('.change').className = 'change'; 
+}
+
+function CompareValues(old, neww) {
+    var c ;
+    var ratio;
+    c=neww-old;
+    ratio=c/neww;
+  return ratio
+}
 
 
 async function fetchCryptoData() {
@@ -33,123 +90,82 @@ async function fetchCryptoData() {
         }
     } catch (error) {
         console.error("Kripto veri çekme başarısız:", error);
-        ShowErrorMessagesForElement(btcElement);
-        ShowErrorMessagesForElement(ethElement);
-        ShowErrorMessagesForElement(xrpElement);
+        showErrorMessagesForElement(btcElement);
+        showErrorMessagesForElement(ethElement); 
+        showErrorMessagesForElement(xrpElement);
     }
 }
 
 async function fetchMetalData() {
-    console.log("Döviz/Maden veriler (Alpha Vantage) çekiliyor...");
+    console.log("Döviz/Maden veriler çekiliyor...");
+
+
+    if (!ALPHA_VANTAGE_API_KEY) {
+        console.error("Alpha Vantage API anahtarı henüz yüklenmedi veya geçersiz.");
+        showErrorMessagesForElement(usdElement);
+        showErrorMessagesForElement(goldElement);
+        return; 
+    }
+
     try {
         // --- DOLAR/TL Kuru ---
         const usdResponse = await fetch(`https://www.alphavantage.co/query?function=CURRENCY_EXCHANGE_RATE&from_currency=USD&to_currency=TRY&apikey=${ALPHA_VANTAGE_API_KEY}`);
         const usdData = await usdResponse.json();
 
-
         if (usdData["Error Message"] || usdData["Note"]) {
-             throw new Error(`Alpha Vantage Dolar API hatası: ${usdData["Error Message"] || usdData["Note"]}`);
-        }
-
-        // --- ALTIN (ONS) Fiyatı ---
-        const goldResponse = await fetch(`https://www.alphavantage.co/query?function=CURRENCY_EXCHANGE_RATE&from_currency=XAU&to_currency=USD&apikey=${ALPHA_VANTAGE_API_KEY}`);
-        const goldData = await goldResponse.json();
-
-        if (goldData["Error Message"] || goldData["Note"]) {
-             throw new Error(`Alpha Vantage Altın API hatası: ${goldData["Error Message"] || goldData["Note"]}`);
-        }
-
-        initialDataLoaded = true; 
-
-        // --- Dolar/TL verilerini işle ---
-        if (usdData["Realtime Currency Exchange Rate"] && usdData["Realtime Currency Exchange Rate"]["5. Exchange Rate"]) {
+             console.error(`Alpha Vantage Dolar API hatası: ${usdData["Error Message"] || usdData["Note"]}`);
+             showErrorMessagesForElement(usdElement);
+        } else if (usdData["Realtime Currency Exchange Rate"] && usdData["Realtime Currency Exchange Rate"]["5. Exchange Rate"]) {
             const usdPrice = parseFloat(usdData["Realtime Currency Exchange Rate"]["5. Exchange Rate"]);
-
-
-            // Alpha Vantage direkt 24 saatlik değişim vermez.
-            // İlerde buraya bir önceki çekim ile farkı koyacağım
-            const usdChange = (Math.random() * 2) - 1; // -1% ile +1% arası rastgele değişim
-
+            const usdChange = (Math.random() * 2) - 1; 
             updateDisplay(usdElement, usdPrice, usdChange);
             usdElement.querySelector('.symbol').innerText = "DOLAR (TL)";
         } else {
-            console.warn("Alpha Vantage'den Dolar/TL verisi gelmedi.");
+            console.warn("Alpha Vantage'den Dolar/TL verisi gelmedi veya format hatalı.");
             showErrorMessagesForElement(usdElement);
         }
 
-        // --- Altın ONS verilerini işle ---
-        if (goldData["Realtime Currency Exchange Rate"] && goldData["Realtime Currency Exchange Rate"]["5. Exchange Rate"]) {
-            const goldPrice = parseFloat(goldData["Realtime Currency Exchange Rate"]["5. Exchange Rate"]);
-            const goldChange = (Math.random() * 2) - 1; // Rastgele değişim
+        // --- ALTIN (ONS)   ---
+        //Burayı tamamlayamadım şimdilik iptal
+        const goldResponse = await fetch(``);
+        const goldData = await usdResponse.json();
 
-            updateDisplay(goldElement, goldPrice, goldChange);
-            goldElement.querySelector('.symbol').innerText = "ALTIN (ONS)";
-        } else {
-            console.warn("Alpha Vantage'den Altın (ONS) verisi gelmedi.");
-            showErrorMessagesForElement(goldElement);
-        }
+
+        initialDataLoaded = true; 
 
     } catch (error) {
         console.error("Döviz/Maden veri çekme başarısız:", error);
-        ShowErrorMessagesForElement(usdElement);
-        ShowErrorMessagesForElement(goldElement);
+        showErrorMessagesForElement(usdElement);
+        showErrorMessagesForElement(goldElement);
     }
 }
 
+async function startFetchingData() {
+    await loadApiKey(); 
 
-function updateDisplay(element, price, change) {
-    element.querySelector('.price').innerText = `$${price.toLocaleString('en-US')}`;
+    fetchCryptoData(); 
+    fetchMetalData(); 
+    
+    setInterval(fetchCryptoData, 60000); 
+    setInterval(fetchMetalData, 60000); 
 
-    const changeElement = element.querySelector('.change');
-    changeElement.innerText = `${change.toFixed(2)}%`;
+   
+    setTimeout(() => {
+        if (!initialDataLoaded) {
+            console.log("5 saniye doldu ve veri yüklenemedi. Hata mesajları gösteriliyor.");
+            showErrorMessagesForElement(btcElement);
+            showErrorMessagesForElement(ethElement);
+            showErrorMessagesForElement(xrpElement);
+            showErrorMessagesForElement(usdElement);
+            showErrorMessagesForElement(goldElement);
+        }
+    }, 5000); // 5 sn
 
-    if (change > 0) {
-        changeElement.className = 'change increase'; //yeşil
-    } else if (change < 0) {
-        changeElement.className = 'change decrease'; //kırmızı
-    } else {
-        changeElement.className = 'change'; //nötr
-    }
 }
 
-function ShowErrorMessagesForElement(targetElement) {
- 
-    targetElement.querySelector('.price').innerText = "Verilere ulaşılamadı";
-    targetElement.querySelector('.change').innerText = ""; 
-    targetElement.querySelector('.change').className = 'change'; 
-}
-
-
-
-
-fetchMetalData(); 
-fetchCryptoData();
-setInterval(fetchCryptoData,60000)
-setInterval(fetchMetalData, 60000); //dakikada bir
+startFetchingData();
 
 
 
 
 
-
-
-/*
-
-function FetchData() {
-
-setTimeout(() => {
-    dataLoaded=false
-    if (!dataLoaded) { 
-  
-        ShowErrorMessagesForElement(btcElement);
-        ShowErrorMessagesForElement(ethElement);
-        ShowErrorMessagesForElement(xrpElement);
-        ShowErrorMessagesForElement(usdElement);
-        ShowErrorMessagesForElement(goldElement);
-    }
-}, 5000);//5sn
-}
-
- FetchData();
-
- */

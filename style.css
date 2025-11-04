@@ -69,7 +69,6 @@ body {
     display: flex; 
     justify-content: space-between;
     align-items: center;
-    /* YENİ EKLENDİ/GÜNCELLENDİ: Esnek yazı boyutu */
 
 
     font-size: clamp(0.9em, 1.8vw, 1.4em); 
