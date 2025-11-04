@@ -1,53 +1,71 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Borsa Duvarı</title>
     <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    
     <div class="data-panel">
-        
         <div class="category-header">KRİPTO PİYASASI</div>
         
-        <div class="item" id="btc">
-            <span class="symbol">BTC</span>
-            <span class="price">Yükleniyor...</span>
-            <span class="change"></span>
-        </div>
-        
-        <div class="item" id="eth">
-            <span class="symbol">ETH</span>
-            <span class="price">Yükleniyor...</span>
-            <span class="change"></span>
-        </div>
-        
-        <div class="item" id="xrp">
-            <span class="symbol">XRP</span>
-            <span class="price">Yükleniyor...</span>
-            <span class="change"></span>
-        </div>
-
+        <div class="crypto-carousel">
+            <div class="crypto-card">
+                <div class="item">
+                    <span class="symbol">BTC</span>
+                    <span class="price" id="btc">$0.00</span>
+                    <span class="change">0.00%</span>
+                </div>
+            </div>
+            <div class="crypto-card">
+                <div class="item">
+                    <span class="symbol">ETH</span>
+                    <span class="price" id="eth">$0.00</span>
+                    <span class="change">0.00%</span>
+                </div>
+            </div>
+            <div class="crypto-card">
+                <div class="item">
+                    <span class="symbol">XRP</span>
+                    <span class="price" id="xrp">$0.00</span>
+                    <span class="change">0.00%</span>
+                </div>
+            </div>
+            <div class="crypto-card">
+                <div class="item">
+                    <span class="symbol">BTC</span>
+                    <span class="price" id="btc2">$0.00</span> <span class="change">0.00%</span>
+                </div>
+            </div>
+            <div class="crypto-card">
+                <div class="item">
+                    <span class="symbol">ETH</span>
+                    <span class="price" id="eth2">$0.00</span>
+                    <span class="change">0.00%</span>
+                </div>
+            </div>
+            <div class="crypto-card">
+                <div class="item">
+                    <span class="symbol">XRP</span>
+                    <span class="price" id="xrp2">$0.00</span>
+                    <span class="change">0.00%</span>
+                </div>
+            </div>
+            </div>
         <div class="category-header">DÖVİZ & MADEN</div>
-        
-        <div class="item" id="usd">
-            <span class="symbol">DOLAR</span>
-            <span class="price">Yükleniyor...</span>
-            <span class="change"></span>
+        <div class="item">
+            <span class="symbol">DOLAR (TL)</span>
+            <span class="price" id="usd">$0.00</span>
+            <span class="change">0.00%</span>
         </div>
-        
-     <!-- #region 
-      <div class="item" id="gold">
+        <div class="item">
             <span class="symbol">ALTIN (ONS)</span>
-            <span class="price">Yükleniyor...</span>
-            <span class="change"></span>
+            <span class="price" id="gold">$0.00</span>
+            <span class="change">0.00%</span>
         </div>
-        -->  
-        
     </div>
-
     <script src="script.js"></script>
 </body>
 </html>
