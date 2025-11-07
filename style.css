@@ -21,19 +21,20 @@ body {
 
     top: 50%; 
     left: 50%; 
-    transform: translate(-50%, -50%); /* added*/
+    transform: translate(-50%, -50%); 
     
-    width: clamp(300px, 80vw, 800px); 
+    width: clamp(80vw, 80vw, 30vw); 
     max-height: 90vh; 
 
-    backdrop-filter: blur(8px);
-    background-color: rgba(0, 0, 0, 0.55); 
+    backdrop-filter: blur(3px);
+    background-color: rgba(0, 0, 0, 0.45); 
     border: 1px solid rgba(255, 255, 255, 0.1); 
     border-radius: 10px; 
-    padding: clamp(15px, 2vw, 30px); /* added*/
+    padding: clamp(15px, 2vw, 30px); 
     box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2); 
 
    
+    overflow-x: hidden;
 }
 
 .category-header {
@@ -108,9 +109,55 @@ body {
 }
 
 
+.crypto-carousel {
+    display: flex; 
+    width: max-content; 
+    animation: scroll-left 30s linear infinite; 
+    margin-bottom: clamp(10px,  1.5vw, 20px);
+    padding-bottom: 5px; 
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1); 
+}
+
+
+.crypto-card {
+    min-width: clamp(180px, 25vw, 250px); 
+    flex-shrink: 0; 
+    margin-right: clamp(10px, 1.5vw, 20px); 
+    background-color: rgba(255, 255, 255, 0.05); 
+    border-radius: 8px; 
+    padding: clamp(8px, 1vw, 15px);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); 
+    display: flex; 
+    align-items: center; 
+}
+
+.crypto-card .item {
+    padding: 0; 
+    border-bottom: none; 
+    width: 100%; 
+    font-size: clamp(0.9em, 1.6vw, 1.2em); 
+}
+
+
+@keyframes scroll-left {
+    from {
+        transform: translateX(0); 
+    }
+    to {
+
+        /* transform: translateX(calc(-1 * (clamp(180px, 25vw, 250px) + clamp(10px, 1.5vw, 20px)) * 3)); */
+        transform: translateX(var(--scroll-distance, -100%));
+
+    }
+}
+
 /*küçük ekran modu */
 
 @media (max-width: 600px) {
+
+    .crypto-carousel {
+        animation-duration: 20s; 
+    }
 
     .data-panel {
         padding: clamp(10px, 4vw, 20px); 
