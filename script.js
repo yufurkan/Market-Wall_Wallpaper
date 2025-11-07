@@ -132,9 +132,6 @@ function setupCryptoCarousel() {
 
 
 
-
-
-
 function showErrorMessagesForElement(targetElement) {
     
     if (targetElement.querySelector) { 

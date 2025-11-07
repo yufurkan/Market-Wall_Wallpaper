@@ -26,8 +26,8 @@ body {
     width: clamp(80vw, 80vw, 30vw); 
     max-height: 90vh; 
 
-    backdrop-filter: blur(8px);
-    background-color: rgba(0, 0, 0, 0.55); 
+    backdrop-filter: blur(3px);
+    background-color: rgba(0, 0, 0, 0.45); 
     border: 1px solid rgba(255, 255, 255, 0.1); 
     border-radius: 10px; 
     padding: clamp(15px, 2vw, 30px); 
@@ -113,7 +113,7 @@ body {
     display: flex; 
     width: max-content; 
     animation: scroll-left 30s linear infinite; 
-    margin-bottom: clamp(10px, 1.5vw, 20px);
+    margin-bottom: clamp(10px,  1.5vw, 20px);
     padding-bottom: 5px; 
     border-bottom: 1px solid rgba(255, 255, 255, 0.1); 
 }
@@ -145,7 +145,7 @@ body {
     }
     to {
 
-        /*transform: translateX(calc(-1 * (clamp(180px, 25vw, 250px) + clamp(10px, 1.5vw, 20px)) * 3)); */
+        /* transform: translateX(calc(-1 * (clamp(180px, 25vw, 250px) + clamp(10px, 1.5vw, 20px)) * 3)); */
         transform: translateX(var(--scroll-distance, -100%));
 
     }
