@@ -70,15 +70,17 @@ function createCryptoCard(idPrefix, symbol, displayName) {
     return cardDiv;
 }
 
+
+
 function setupCryptoCarousel() {
     const carouselContainer = document.querySelector('.crypto-carousel');
-    carouselContainer.innerHTML = ''; 
+    carouselContainer.innerHTML = ''; //temizle
 
-    const initialCards = cryptoSymbols.map((symbol, index) => {
-        const idPrefix = cryptoDisplayNames[index].toLowerCase(); 
+
+    const originalCards = cryptoSymbols.map((symbol, index) => {
+        const idPrefix = cryptoDisplayNames[index].toLowerCase();
         const card = createCryptoCard(idPrefix, symbol, cryptoDisplayNames[index]);
         carouselContainer.appendChild(card);
-        
         cryptoCardElements.push({
             id: idPrefix,
             element: card.querySelector('.price'),
@@ -88,17 +90,20 @@ function setupCryptoCarousel() {
         return card;
     });
 
-    const numberOfCopies = 2; 
-    for (let i = 0; i < numberOfCopies; i++) {
-        initialCards.forEach((card, index) => {
+    //3 set kart / orijinal + 2 kopya
+    const numberOfCopiesForSeamlessLoop = 2; 
+    for (let i = 0; i < numberOfCopiesForSeamlessLoop; i++) {
+        originalCards.forEach((card, index) => {
             const clonedCard = card.cloneNode(true); 
-     
 
+            //id leri değiştir
             const originalPriceId = cryptoDisplayNames[index].toLowerCase();
-            clonedCard.querySelector('.price').id = `${originalPriceId}${i + 2}`; 
+
+            
+            clonedCard.querySelector('.price').id = `${originalPriceId}${i + 1 + originalCards.length}`; 
             
             cryptoCardElements.push({
-                id: `${originalPriceId}${i + 2}`,
+                id: clonedCard.querySelector('.price').id,
                 element: clonedCard.querySelector('.price'),
                 changeElement: clonedCard.querySelector('.change'),
                 symbolElement: clonedCard.querySelector('.symbol')
@@ -106,7 +111,29 @@ function setupCryptoCarousel() {
             carouselContainer.appendChild(clonedCard);
         });
     }
+
+    // Animasyon kaydırma mesafesini hesapla
+
+    const firstCard = originalCards[0]; //ilk kart
+    if (firstCard) {
+        const cardComputedStyle = getComputedStyle(firstCard);
+        const cardWidth = firstCard.offsetWidth; 
+        const marginRight = parseFloat(cardComputedStyle.marginRight); // sağ
+
+   
+        const totalOriginalWidth = (cardWidth + marginRight) * originalCards.length;
+        
+
+        carouselContainer.style.setProperty('--scroll-distance', `-${totalOriginalWidth}px`);
+    } else {
+        console.warn("Kripto kartları oluşturulamadı, kaydırma mesafesi ayarlanamadı.");
+    }
 }
+
+
+
+
+
 
 function showErrorMessagesForElement(targetElement) {
     
