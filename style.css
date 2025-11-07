@@ -21,19 +21,20 @@ body {
 
     top: 50%; 
     left: 50%; 
-    transform: translate(-50%, -50%); /* added*/
+    transform: translate(-50%, -50%); 
     
-    width: clamp(300px, 80vw, 800px); 
+    width: clamp(80vw, 80vw, 30vw); 
     max-height: 90vh; 
 
     backdrop-filter: blur(8px);
     background-color: rgba(0, 0, 0, 0.55); 
     border: 1px solid rgba(255, 255, 255, 0.1); 
     border-radius: 10px; 
-    padding: clamp(15px, 2vw, 30px); /* added*/
+    padding: clamp(15px, 2vw, 30px); 
     box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2); 
 
    
+    overflow-x: hidden;
 }
 
 .category-header {
@@ -144,7 +145,8 @@ body {
     }
     to {
 
-        transform: translateX(calc(-1 * (clamp(180px, 25vw, 250px) + clamp(10px, 1.5vw, 20px)) * 3)); 
+        /*transform: translateX(calc(-1 * (clamp(180px, 25vw, 250px) + clamp(10px, 1.5vw, 20px)) * 3)); */
+        transform: translateX(var(--scroll-distance, -100%));
 
     }
 }
