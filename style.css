@@ -26,9 +26,7 @@ body {
     width: clamp(80vw, 80vw, 30vw); 
     max-height: 90vh; 
 
-
     backdrop-filter: blur(1px);
-
     background-color: rgba(0, 0, 0, 0.45); 
     border: 1px solid rgba(255, 255, 255, 0.1); 
     border-radius: 10px; 
