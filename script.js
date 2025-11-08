@@ -6,11 +6,10 @@ const usdElement = document.getElementById('usd');
 let initialDataLoaded = false;
 let cryptoCardElements = [];
 
-//burayi ileride bir txt den çakeicem herkes kendi apisini olusurup txt ye atacak
-//txt live serverda gözükmüyo jon aldim
-let ALPHA_VANTAGE_API_KEY = '';//burayi vermiyicem 500 api istek siniri var
 
-//sembol ayarlari
+let ALPHA_VANTAGE_API_KEY = '';
+
+
 const cryptoSymbols = ['bitcoin', 'ethereum', 'ripple'];
 const cryptoDisplayNames = ['BTC', 'ETH', 'XRP'];
 
@@ -190,7 +189,7 @@ async function fetchCryptoData() {
 
     } catch (error) {
         console.error("Kripto veri çekme basarisiz:", error);
-        // Tüm kripto kartlarina hata mesaji göster
+
         cryptoCardElements.forEach(card => showErrorMessagesForElement(card));
     }
 }
@@ -250,18 +249,21 @@ async function startFetchingData() {
 
    
     setTimeout(() => {
-    if (!initialDataLoaded) {
-        console.log("5 saniye doldu ve veri yüklenemedi. Hata mesajlari gösteriliyor.");
-        
- 
-        cryptoCardElements.forEach(card => {
-            showErrorMessagesForElement(card); // card bir obje
-        });
-       
-        showErrorMessagesForElement(usdElement);
-        //showErrorMessagesForElement(goldElement); 
-    }
-}, 5000); // 5 sn
+
+        if (!initialDataLoaded) {
+            console.log("5 saniye doldu ve API VERİLERİ yüklenemedi.");
+            
+            // Kripto 
+            cryptoCardElements.forEach(card => {
+                showErrorMessagesForElement(card); // card bir obje
+            });
+            
+            // Dolar
+            showErrorMessagesForElement(usdElement);
+        }
+    }, 5000); // 5 sn
+
+
 
 }
 
