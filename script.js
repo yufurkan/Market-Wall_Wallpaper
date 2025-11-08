@@ -7,6 +7,10 @@ let initialDataLoaded = false;
 let cryptoCardElements = [];
 
 
+let morningImages = [];
+let nightImages = [];
+
+//txt live serverda gözükmüyo json aldim
 let ALPHA_VANTAGE_API_KEY = '';
 
 
@@ -37,6 +41,39 @@ console.log("API_Key.json okunuyor...");
     } catch (hata) {
         console.error('api_key.json okuma hatasi:', hata);
         return null;
+    }
+}
+
+async function fetchImageLists() {
+    console.log("Yerel 'image-list.json' okunuyor...");
+    try {
+
+        const response = await fetch('image-list.json'); 
+        
+        if (!response.ok) {
+            throw new Error(`image-list.json bulunamadı: ${response.status}`);
+        }
+        
+        const data = await response.json();
+
+        if (data.morningImages && data.nightImages) {
+            morningImages = data.morningImages; 
+            nightImages = data.nightImages; 
+            
+            if (morningImages.length === 0 && nightImages.length === 0) {
+                console.warn("image-list.json boş. 'create-image-list.bat' dosyasını çalıştırdın mı?");
+                return false;
+            }
+            
+            console.log(`Yerel listeden ${morningImages.length} sabah, ${nightImages.length} gece resmi bulundu.`);
+            return true;
+        } else {
+            throw new Error("image-list.json formatı hatalı.");
+        }
+
+    } catch (error) {
+        console.error('Resim listesi çekme hatası:', error);
+        return false;
     }
 }
 
@@ -157,6 +194,38 @@ function CompareValues(old, neww) {
   return ratio
 }
 
+async function changeBackgroundRandomly() {
+    const now = new Date();
+    const currentHour = now.getHours(); 
+    
+    let selectedList;
+
+    if (currentHour >= 6 && currentHour < 18) { 
+        console.log("M");
+        selectedList = morningImages;
+    } else {
+        console.log("N");
+        selectedList = nightImages;
+    }
+
+    if (!selectedList || selectedList.length === 0) {
+        console.error("Resim listesi boş veya hatalı! 'create-image-list.bat' çalıştırıldı mı?");
+        return;
+    }
+
+
+    const randomIndex = Math.floor(Math.random() * selectedList.length);
+    const randomImage = selectedList[randomIndex];
+
+    if (!randomImage) {
+        console.error("Rastgele resim seçilemedi!");
+        return;
+    }
+
+    console.log(`Arka plan şu olarak ayarlandı: ${randomImage}`);
+    document.body.style.backgroundImage = `url('${randomImage}')`;
+}
+
 
 async function fetchCryptoData() {
     console.log("Kripto veriler çekiliyor...");
@@ -189,7 +258,7 @@ async function fetchCryptoData() {
 
     } catch (error) {
         console.error("Kripto veri çekme basarisiz:", error);
-
+       
         cryptoCardElements.forEach(card => showErrorMessagesForElement(card));
     }
 }
@@ -239,17 +308,30 @@ async function fetchMetalData() {
 }
 
 async function startFetchingData() {
+    
     await loadApiKey(); 
+    const imagesLoaded = await fetchImageLists();   
     setupCryptoCarousel()
+
+
+    if (imagesLoaded) {
+        changeBackgroundRandomly();
+        setInterval(changeBackgroundRandomly, 900000); // 15 dk
+    } else {
+        console.error("ERROR Images couldn't load.");
+    }
+
+
+
+
     fetchCryptoData(); 
     fetchMetalData(); 
     
     setInterval(fetchCryptoData, 60000); 
     setInterval(fetchMetalData, 60000); 
-
+    //setInterval(changeBackgroundRandomly, 900000); // 15 dk
    
     setTimeout(() => {
-
         if (!initialDataLoaded) {
             console.log("5 saniye doldu ve API VERİLERİ yüklenemedi.");
             
@@ -262,8 +344,6 @@ async function startFetchingData() {
             showErrorMessagesForElement(usdElement);
         }
     }, 5000); // 5 sn
-
-
 
 }
 
