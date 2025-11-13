@@ -1,0 +1,19 @@
+{
+    "AppVersion": "1.0.0.0",
+    "prop": {
+        "stockSymbolList": {
+            "text": "Hisse Senetleri ",
+            "type": "textbox",
+            "value": "AAPL, MSFT, TSLA"
+
+        },
+        "stockScrollSpeed": {
+            "text": "Hisse Kayma Hızı (Saniye)",
+            "type": "slider",
+            "min": 10,
+            "max": 100,
+            "value": 35
+        }
+   
+    }
+}
