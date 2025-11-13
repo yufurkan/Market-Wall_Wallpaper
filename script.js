@@ -4,7 +4,13 @@ const usdElement = document.getElementById('usd');
 
 
 let initialDataLoaded = false;
+
 let cryptoCardElements = [];
+const cryptoSymbols = ['bitcoin', 'ethereum', 'ripple'];
+const cryptoDisplayNames = ['BTC', 'ETH', 'XRP'];
+
+let stockCardElements = []; 
+let stockSymbols = ['AAPL', 'MSFT', 'TSLA', 'NVDA', 'AMZN']; // Varsayılan liste
 
 
 let morningImages = [];
@@ -14,30 +20,21 @@ let nightImages = [];
 let ALPHA_VANTAGE_API_KEY = '';
 
 
-const cryptoSymbols = ['bitcoin', 'ethereum', 'ripple'];
-const cryptoDisplayNames = ['BTC', 'ETH', 'XRP'];
+
 
 async function loadApiKey() {
-console.log("API_Key.json okunuyor..."); 
+    console.log("API_Key.json okunuyor..."); 
     try {
         const response = await fetch('api_key.json'); 
-
-        if (!response.ok) {
-            console.error(`api_key.json dosyasi bulunamadi veya erisilemedi: ${response.status} ${response.statusText}`);
-            return null;
-        }
-
+        if (!response.ok) return null;
         const jsonData = await response.json(); 
 
         if (jsonData && jsonData.api_key && typeof jsonData.api_key === 'string' && jsonData.api_key.trim().length > 1) {
             ALPHA_VANTAGE_API_KEY = jsonData.api_key.trim(); 
             console.log("API Anahtari basariyla okundu.");
             return ALPHA_VANTAGE_API_KEY;
-        } else {
-            console.error("api_key.json dosyasi bos veya 'api_key' anahtari içermiyor.");
-            return null;
         }
-
+        return null;
     } catch (hata) {
         console.error('api_key.json okuma hatasi:', hata);
         return null;
@@ -77,19 +74,35 @@ async function fetchImageLists() {
     }
 }
 
-function updateDisplay(cardObject, price, change) {
+function updateDisplay(target, price, change) {
+    let priceEl, changeEl;
 
-    cardObject.element.innerText = `$${price.toLocaleString('en-US')}`;
+    if (target.querySelector) { 
+        // HTML 
+        priceEl = target.querySelector('.price');
+        changeEl = target.querySelector('.change');
+    } else if (target.element) {
+        // Kart Objesi
+        priceEl = target.element;
+        changeEl = target.changeElement;
+    }
 
-    const changeElement = cardObject.changeElement; 
-    changeElement.innerText = `${change.toFixed(2)}%`;
+    if (!priceEl || !changeEl) return;
 
-    if (change > 0) {
-        changeElement.className = 'change increase'; //yesil
-    } else if (change < 0) {
-        changeElement.className = 'change decrease'; //kirmizi
+    // Fiyat Formatlama
+    priceEl.innerText = `$${price.toLocaleString('en-US')}`;
+
+
+    const changeVal = typeof change === 'string' ? parseFloat(change.replace('%', '')) : change;
+    changeEl.innerText = `${changeVal.toFixed(2)}%`;
+
+    // Renk 
+    if (changeVal > 0) {
+        changeEl.className = 'change increase'; 
+    } else if (changeVal < 0) {
+        changeEl.className = 'change decrease'; 
     } else {
-        changeElement.className = 'change'; //nötr
+        changeEl.className = 'change'; 
     }
 }
 
@@ -167,22 +180,21 @@ function setupCryptoCarousel() {
 }
 
 
-
 function showErrorMessagesForElement(targetElement) {
-    
-    if (targetElement.querySelector) { 
-   
-        targetElement.querySelector('.price').innerText = "Verilere ulasilamadi";
-        targetElement.querySelector('.change').innerText = ""; 
-        targetElement.querySelector('.change').className = 'change'; 
+    let priceEl, changeEl;
+
+    if (targetElement.querySelector) {
+        priceEl = targetElement.querySelector('.price');
+        changeEl = targetElement.querySelector('.change');
     } else if (targetElement.element) {
-  
-        targetElement.element.innerText = "Verilere ulasilamadi";
-        targetElement.changeElement.innerText = "";
-        targetElement.changeElement.className = 'change';
-    } else {
-      
-        console.warn("showErrorMessagesForElement: Geçersiz element alindi.", targetElement);
+        priceEl = targetElement.element;
+        changeEl = targetElement.changeElement;
+    }
+
+    if (priceEl) priceEl.innerText = "Veri Yok";
+    if (changeEl) {
+        changeEl.innerText = ""; 
+        changeEl.className = 'change'; 
     }
 }
 
@@ -263,8 +275,49 @@ async function fetchCryptoData() {
     }
 }
 
+
+async function fetchNasdaqData() {
+    console.log("NASDAQ verileri çekiliyor...");
+
+    if (!ALPHA_VANTAGE_API_KEY) {
+        console.error("API anahtarı yok.");
+        stockCardElements.forEach(card => showErrorMessagesForElement(card));
+        return; 
+    }
+
+    // Alpha Vantage limiti Dakikada 5 api değişebilir
+
+    const limitedSymbols = stockSymbols.slice(0, 5); 
+
+    for (const symbol of limitedSymbols) {
+        try {
+            const response = await fetch(`https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${symbol}&apikey=${ALPHA_VANTAGE_API_KEY}`);
+            const data = await response.json();
+            const quote = data["Global Quote"];
+
+            if (quote && quote["05. price"]) {
+                const price = parseFloat(quote["05. price"]);
+                const change = quote["10. change percent"]; 
+
+                // hisseye ait tüm kartları güncelle
+                stockCardElements
+                    .filter(card => card.id === symbol)
+                    .forEach(card => updateDisplay(card, price, change));
+            } else {
+                console.warn(`Hisse verisi gelmedi: ${symbol}`, data);
+                stockCardElements
+                    .filter(card => card.id === symbol)
+                    .forEach(card => showErrorMessagesForElement(card));
+            }
+        } catch (error) {
+            console.error(`Hisse hatası (${symbol}):`, error);
+        }
+    }
+}
+
+
+//CANCELLED!!
 async function fetchMetalData() {
-    console.log("Döviz/Maden veriler çekiliyor...");
 
 
     if (!ALPHA_VANTAGE_API_KEY) {
@@ -305,13 +358,122 @@ async function fetchMetalData() {
         showErrorMessagesForElement(usdElement);
         //showErrorMessagesForElement(goldElement);
     }
+}//CANCELLED!!
+
+
+function setupStockCarousel() {
+    const container = document.querySelector('.stock-carousel');
+    
+    // Eğer HTML'de bu class yoksa işlemi durdur
+    if (!container) return;
+
+    // Önceki içeriği temizle
+    // Livelyden ayar değişirse üst üste binmesin
+    container.innerHTML = '';
+    stockCardElements = []; 
+
+
+
+    // Orijinal Kartları Oluştur ---
+    const originalCards = stockSymbols.map(symbol => {
+        const card = createStockCard(symbol);
+        container.appendChild(card); // ekle
+
+        // kartı listesine al 
+        stockCardElements.push({
+            id: symbol, 
+            element: card.querySelector('.price'),
+            changeElement: card.querySelector('.change'),
+            symbolElement: card.querySelector('.symbol')
+        });
+        return card;
+    });//
+
+
+
+    // Klonları Oluştur ---
+    const copyCount = 2; 
+    
+    for (let i = 0; i < copyCount; i++) {
+        originalCards.forEach(card => {
+
+            const clonedCard = card.cloneNode(true);
+            
+
+            const symbol = card.querySelector('.symbol').innerText;
+
+            stockCardElements.push({
+                id: symbol, // ID yine aynı 
+                element: clonedCard.querySelector('.price'),
+                changeElement: clonedCard.querySelector('.change'),
+                symbolElement: clonedCard.querySelector('.symbol')
+            });
+
+            container.appendChild(clonedCard); // Klonu ekle
+        });
+    }
+
+
+    
+
+    // Animasyon Mesafesini Hesapla ---
+    // İlk kartı ölç
+    const firstCard = originalCards[0];
+    if (firstCard) {
+        const style = getComputedStyle(firstCard);
+        const width = firstCard.offsetWidth; // Kart genişliği
+        const margin = parseFloat(style.marginRight); // Sağ boşluk
+        
+        // Bir setin toplam genişliği
+        const totalWidth = (width + margin) * originalCards.length;
+        
+
+        container.style.setProperty('--stock-scroll-distance', `-${totalWidth}px`);
+    }
+}//setupStockCarousel
+
+
+function createStockCard(symbol) {
+
+    const cardDiv = document.createElement('div');
+    
+
+    cardDiv.className = 'crypto-card'; //crypto clasını ilerde değiştirmeliyim
+    
+ 
+    cardDiv.innerHTML = `
+        <div class="item">
+            <span class="symbol">${symbol}</span>
+            <span class="price">Yükleniyor...</span>
+            <span class="change">0.00%</span>
+        </div>
+    `;
+    
+    return cardDiv;
 }
+
+
+
+function livelyPropertyListener(name, val) {
+    if (name === "stockSymbolList") {
+        stockSymbols = val.split(',').map(s => s.trim().toUpperCase()).filter(s => s.length > 0);
+        setupStockCarousel();
+        fetchNasdaqData();
+    }
+    if (name === "stockScrollSpeed") {
+        const carousel = document.querySelector('.stock-carousel');
+        if(carousel) carousel.style.animationDuration = val + 's';
+    }
+}
+
+
 
 async function startFetchingData() {
     
     await loadApiKey(); 
     const imagesLoaded = await fetchImageLists();   
     setupCryptoCarousel()
+    setupStockCarousel()
 
 
     if (imagesLoaded) {
@@ -325,25 +487,23 @@ async function startFetchingData() {
 
 
     fetchCryptoData(); 
-    fetchMetalData(); 
+    fetchNasdaqData();
+    //fetchMetalData(); 
     
     setInterval(fetchCryptoData, 60000); 
-    setInterval(fetchMetalData, 60000); 
+    setInterval(fetchNasdaqData, 120000);
+
+    //setInterval(fetchMetalData, 60000); 
     //setInterval(changeBackgroundRandomly, 900000); // 15 dk
-   
+
+
     setTimeout(() => {
         if (!initialDataLoaded) {
-            console.log("5 saniye doldu ve API VERİLERİ yüklenemedi.");
-            
-            // Kripto 
-            cryptoCardElements.forEach(card => {
-                showErrorMessagesForElement(card); // card bir obje
-            });
-            
-            // Dolar
-            showErrorMessagesForElement(usdElement);
+            console.log("Başlangıç verileri yüklenemedi.");
+            cryptoCardElements.forEach(card => showErrorMessagesForElement(card));
+            stockCardElements.forEach(card => showErrorMessagesForElement(card));
         }
-    }, 5000); // 5 sn
+    }, 7000);
 
 }
 
