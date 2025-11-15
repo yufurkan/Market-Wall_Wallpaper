@@ -198,13 +198,6 @@ function showErrorMessagesForElement(targetElement) {
     }
 }
 
-function CompareValues(old, neww) {
-    var c ;
-    var ratio;
-    c=neww-old;
-    ratio=c/neww;
-  return ratio
-}
 
 async function changeBackgroundRandomly() {
     const now = new Date();
