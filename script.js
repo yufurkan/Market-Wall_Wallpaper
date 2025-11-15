@@ -74,66 +74,29 @@ async function fetchImageLists() {
     }
 }
 
-/*
 function updateDisplay(target, price, change) {
     let priceEl, changeEl;
 
     if (target.querySelector) { 
+        // HTML 
         priceEl = target.querySelector('.price');
         changeEl = target.querySelector('.change');
     } else if (target.element) {
+        // Kart Objesi
         priceEl = target.element;
         changeEl = target.changeElement;
     }
 
     if (!priceEl || !changeEl) return;
 
+    // Fiyat Formatlama
     priceEl.innerText = `$${price.toLocaleString('en-US')}`;
-//----
+
+
     const changeVal = typeof change === 'string' ? parseFloat(change.replace('%', '')) : change;
     changeEl.innerText = `${changeVal.toFixed(2)}%`;
 
-    if (changeVal > 0) {
-        changeEl.className = 'change increase'; 
-    } else if (changeVal < 0) {
-        changeEl.className = 'change decrease'; 
-    } else {
-        changeEl.className = 'change'; 
-    }
-}
-
-*/
-
-// YORUM: updateDisplay fonksiyonunu bununla DEĞİŞTİR
-
-function updateDisplay(target, price, change) {
-    let priceEl, changeEl;
-
-    if (target.querySelector) { 
-        priceEl = target.querySelector('.price');
-        changeEl = target.querySelector('.change');
-    } else if (target.element) {
-        priceEl = target.element;
-        changeEl = target.changeElement;
-    }
-
-    if (!priceEl || !changeEl) return;
-
-    priceEl.innerText = `$${price.toLocaleString('en-US')}`;
-
-    // ----------------------
-    let changeVal;
-    if (typeof change === 'string') {
-        // Alpha Vantage
-        changeVal = parseFloat(change.replace('%', ''));
-    } else {
-        // CoinGecko veya Yahoo
-        changeVal = change;
-    }
-    
-
-    changeEl.innerText = `${changeVal.toFixed(2)}%`;
-
+    // Renk 
     if (changeVal > 0) {
         changeEl.className = 'change increase'; 
     } else if (changeVal < 0) {
@@ -313,7 +276,7 @@ async function fetchCryptoData() {
 }
 
 
-/*async function fetchNasdaqData() {
+async function fetchNasdaqData() {
     console.log("NASDAQ verileri çekiliyor...");
 
     if (!ALPHA_VANTAGE_API_KEY) {
@@ -330,24 +293,6 @@ async function fetchCryptoData() {
         try {
             const response = await fetch(`https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${symbol}&apikey=${ALPHA_VANTAGE_API_KEY}`);
             const data = await response.json();
-
-
-            if (data["Note"] || data["Error Message"]) {
-                if(data["Note"]) console.warn(`Alpha Vantage API Notu (${symbol}): Limiti aşmış olabilirsin.`);
-                if(data["Error Message"]) console.error(`Alpha Vantage API Hatası (${symbol}): Hatalı sembol veya API anahtarı.`);
-                
-                stockCardElements
-                    .filter(card => card.id === symbol)
-                    .forEach(card => showErrorMessagesForElement(card));
-                continue; // Bu hisseyi atla, döngüye devam et
-            }
-            // ============
-
-
-
-
-
-
             const quote = data["Global Quote"];
 
             if (quote && quote["05. price"]) {
@@ -368,60 +313,8 @@ async function fetchCryptoData() {
             console.error(`Hisse hatası (${symbol}):`, error);
         }
     }
-}*/
-
-async function fetchNasdaqData() {
-    console.log("NASDAQ verileri (Yahoo Hilesi) çekiliyor...");
-
-   
-    const symbolString = stockSymbols.join(',');
-
-    // Proxy üzerinden Yahoo APIsine tek bir sorgu at
-    const apiUrl = `https://api.allorigins.win/raw?url=https://query1.finance.yahoo.com/v7/finance/quote?symbols=${symbolString}`;
-
-    try {
-        const response = await fetch(apiUrl);
-        if (!response.ok) {
-            throw new Error(`Yahoo API hatası: ${response.status}`);
-        }
-        
-        const data = await response.json();
-
-
-        if (!data || !data.quoteResponse) {
-            console.error("Yahoo'dan 'quoteResponse' objesi gelmedi. Proxy veya API hatası olabilir.", data);
-            stockCardElements.forEach(card => showErrorMessagesForElement(card));
-            return;
-        }
-        
-
-        const results = data.quoteResponse.result;
-
-        if (!results) {
-            console.error("Yahoo'dan veri gelmedi, format değişmiş olabilir.");
-            stockCardElements.forEach(card => showErrorMessagesForElement(card));
-            return;
-        }
-
-        // kartları güncelle
-        results.forEach(stock => {
-            const symbol = stock.symbol;
-            const price = stock.regularMarketPrice;
-            const change = stock.regularMarketChangePercent; 
-
-            // O hisseye ait kartları güncelle
-            stockCardElements
-                .filter(card => card.id === symbol)
-                .forEach(cardObj => updateDisplay(cardObj, price, change));
-        });
-
-        initialDataLoaded = true; 
-
-    } catch (error) {
-        console.error("NASDAQ Yahoo veri çekme başarısız:", error);
-        stockCardElements.forEach(card => showErrorMessagesForElement(card));
-    }
 }
+
 
 //CANCELLED!!
 async function fetchMetalData() {
@@ -574,13 +467,14 @@ function livelyPropertyListener(name, val) {
 }
 
 
+
 async function startFetchingData() {
     
-    await loadApiKey();
+    await loadApiKey(); 
     const imagesLoaded = await fetchImageLists();   
-    
-    setupCryptoCarousel();
-    setupStockCarousel();
+    setupCryptoCarousel()
+    setupStockCarousel()
+
 
     if (imagesLoaded) {
         changeBackgroundRandomly();
@@ -589,14 +483,28 @@ async function startFetchingData() {
         console.error("ERROR Images couldn't load.");
     }
 
-    fetchCryptoData(); 
-    fetchNasdaqData(); 
-    
-    // NASDAQ'ı da 60 saniyeye çek
-    setInterval(fetchCryptoData, 60000); 
-    setInterval(fetchNasdaqData, 60000); // 120000 -> 60000
 
+
+
+    fetchCryptoData(); 
+    fetchNasdaqData();
+    //fetchMetalData(); 
     
+    setInterval(fetchCryptoData, 60000); 
+    setInterval(fetchNasdaqData, 120000);
+
+    //setInterval(fetchMetalData, 60000); 
+    //setInterval(changeBackgroundRandomly, 900000); // 15 dk
+
+
+    setTimeout(() => {
+        if (!initialDataLoaded) {
+            console.log("Başlangıç verileri yüklenemedi.");
+            cryptoCardElements.forEach(card => showErrorMessagesForElement(card));
+            stockCardElements.forEach(card => showErrorMessagesForElement(card));
+        }
+    }, 7000);
+
 }
 
 startFetchingData();
