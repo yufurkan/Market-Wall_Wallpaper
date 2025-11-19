@@ -141,6 +141,42 @@ body {
 }
 
 
+
+
+
+.stock-carousel {
+    display: flex; 
+    white-space: nowrap;
+    overflow: hidden; 
+    width: 100%; 
+    margin-top: 10px;
+    animation: scroll-right var(--stock-scroll-speed, 30s) linear infinite; 
+
+}
+
+.stock-carousel .crypto-card { 
+    flex-shrink: 0; 
+    margin-right: 20px; 
+  
+    background-color: rgba(0, 0, 0, 0.4); 
+    padding: 8px 15px;
+    border-radius: 5px;
+    font-size: 1.1em;
+    color: white;
+    display: flex;
+    align-items: center;
+}
+
+.stock-carousel .crypto-card .item {
+    display: flex;
+    align-items: center;
+    gap: 10px; 
+}
+
+
+
+
+
 @keyframes scroll-left {
     from {
         transform: translateX(0); 
@@ -152,6 +188,27 @@ body {
 
     }
 }
+
+
+@keyframes scroll-right {
+    from {
+        
+        transform: translateX(var(--stock-scroll-distance, -100%)); 
+    }
+    to {
+        /* Sıfıra (başa) doğru git -> Sağa doğru kayma efekti yaratır */
+        transform: translateX(0); 
+    }
+}
+
+
+
+
+
+
+
+
+
 
 /*küçük ekran modu */
 
