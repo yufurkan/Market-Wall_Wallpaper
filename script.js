@@ -17,7 +17,7 @@ let morningImages = [];
 let nightImages = [];
 
 //txt live serverda gözükmüyo json aldim
-let ALPHA_VANTAGE_API_KEY = '';
+let finnhub_api_key = '';
 
 
 
@@ -29,12 +29,15 @@ async function loadApiKey() {
         if (!response.ok) return null;
         const jsonData = await response.json(); 
 
-        if (jsonData && jsonData.api_key && typeof jsonData.api_key === 'string' && jsonData.api_key.trim().length > 1) {
-            ALPHA_VANTAGE_API_KEY = jsonData.api_key.trim(); 
-            console.log("API Anahtari basariyla okundu.");
-            return ALPHA_VANTAGE_API_KEY;
+   
+        if (jsonData && jsonData.api_key && jsonData.api_key.trim().length > 1) {
+            FINNHUB_API_KEY = jsonData.api_key.trim(); 
+            console.log("Finnhub API Anahtari basariyla okundu.");
+            return FINNHUB_API_KEY;
+        } else {
+            console.error("api_key.json içinde 'finnhub_api_key' bulunamadı.");
+            return null;
         }
-        return null;
     } catch (hata) {
         console.error('api_key.json okuma hatasi:', hata);
         return null;
@@ -182,7 +185,6 @@ function setupCryptoCarousel() {
 
 function showErrorMessagesForElement(targetElement) {
     let priceEl, changeEl;
-
     if (targetElement.querySelector) {
         priceEl = targetElement.querySelector('.price');
         changeEl = targetElement.querySelector('.change');
@@ -196,6 +198,19 @@ function showErrorMessagesForElement(targetElement) {
         changeEl.innerText = ""; 
         changeEl.className = 'change'; 
     }
+}
+
+function createCryptoCard(idPrefix, symbol, displayName) {
+    const cardDiv = document.createElement('div');
+    cardDiv.className = 'crypto-card';
+    cardDiv.innerHTML = `
+        <div class="item">
+            <span class="symbol">${displayName}</span>
+            <span class="price" id="${idPrefix}">${displayName} Yükleniyor...</span>
+            <span class="change">0.00%</span>
+        </div>
+    `;
+    return cardDiv;
 }
 
 
@@ -269,89 +284,76 @@ async function fetchCryptoData() {
 }
 
 
-async function fetchNasdaqData() {
-    console.log("NASDAQ verileri çekiliyor...");
-
-    if (!ALPHA_VANTAGE_API_KEY) {
-        console.error("API anahtarı yok.");
-        stockCardElements.forEach(card => showErrorMessagesForElement(card));
-        return; 
-    }
-
-    // Alpha Vantage limiti Dakikada 5 api değişebilir
-
-    const limitedSymbols = stockSymbols.slice(0, 5); 
-
-    for (const symbol of limitedSymbols) {
-        try {
-            const response = await fetch(`https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${symbol}&apikey=${ALPHA_VANTAGE_API_KEY}`);
-            const data = await response.json();
-            const quote = data["Global Quote"];
-
-            if (quote && quote["05. price"]) {
-                const price = parseFloat(quote["05. price"]);
-                const change = quote["10. change percent"]; 
-
-                // hisseye ait tüm kartları güncelle
-                stockCardElements
-                    .filter(card => card.id === symbol)
+async function fetchCryptoData() {
+    console.log("Kripto veriler çekiliyor...");
+    try {
+        const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,ripple&vs_currencies=usd&include_24hr_change=true');
+        if (!response.ok) throw new Error(`CoinGecko API hatasi: ${response.status}`);
+        const data = await response.json();
+        
+        cryptoSymbols.forEach((symbolKey, index) => {
+            if (data[symbolKey]) {
+                const price = data[symbolKey].usd;
+                const change = data[symbolKey].usd_24h_change;
+                
+                cryptoCardElements
+                    .filter(item => item.id.startsWith(cryptoDisplayNames[index].toLowerCase()))
                     .forEach(card => updateDisplay(card, price, change));
             } else {
-                console.warn(`Hisse verisi gelmedi: ${symbol}`, data);
-                stockCardElements
-                    .filter(card => card.id === symbol)
+                cryptoCardElements
+                    .filter(item => item.id.startsWith(cryptoDisplayNames[index].toLowerCase()))
                     .forEach(card => showErrorMessagesForElement(card));
             }
-        } catch (error) {
-            console.error(`Hisse hatası (${symbol}):`, error);
-        }
+        });
+        initialDataLoaded = true; 
+    } catch (error) {
+        console.error("Kripto veri çekme basarisiz:", error);
+        cryptoCardElements.forEach(card => showErrorMessagesForElement(card));
     }
 }
 
 
-//CANCELLED!!
-async function fetchMetalData() {
+async function fetchNasdaqData() {
+    console.log("NASDAQ verileri (Finnhub) çekiliyor...");
 
-
-    if (!ALPHA_VANTAGE_API_KEY) {
-        console.error("Alpha Vantage API anahtari henüz yüklenmedi veya geçersiz.");
-        showErrorMessagesForElement(usdElement);
-        //showErrorMessagesForElement(goldElement);
+    if (!FINNHUB_API_KEY) {
+        console.error("Finnhub API anahtarı yok.");
+        stockCardElements.forEach(card => showErrorMessagesForElement(card));
         return; 
     }
 
-    try {
-        // --- DOLAR/TL Kuru ---
-        const usdResponse = await fetch(`https://www.alphavantage.co/query?function=CURRENCY_EXCHANGE_RATE&from_currency=USD&to_currency=TRY&apikey=${ALPHA_VANTAGE_API_KEY}`);
-        const usdData = await usdResponse.json();
+  
+    for (const symbol of stockSymbols) {
+        try {
+          
+            const response = await fetch(`https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${FINNHUB_API_KEY}`);
+            const data = await response.json();
 
-        if (usdData["Error Message"] || usdData["Note"]) {
-             console.error(`Alpha Vantage Dolar API hatasi: ${usdData["Error Message"] || usdData["Note"]}`);
-             showErrorMessagesForElement(usdElement);
-        } else if (usdData["Realtime Currency Exchange Rate"] && usdData["Realtime Currency Exchange Rate"]["5. Exchange Rate"]) {
-            const usdPrice = parseFloat(usdData["Realtime Currency Exchange Rate"]["5. Exchange Rate"]);
-            const usdChange = (Math.random() * 2) - 1; 
-            updateDisplay(usdElement, usdPrice, usdChange);
-            usdElement.querySelector('.symbol').innerText = "DOLAR (TL)";
-        } else {
-            console.warn("Alpha Vantage'den Dolar/TL verisi gelmedi veya format hatali.");
-            showErrorMessagesForElement(usdElement);
+            // { c: Current Price, dp: Percent Change, ... }
+            if (data && data.c != null) {
+                const price = data.c;  
+                const change = data.dp; 
+
+                stockCardElements
+                    .filter(card => card.id === symbol)
+                    .forEach(card => updateDisplay(card, price, change));
+            } else {
+                console.warn(`Finnhub verisi boş: ${symbol}`, data);
+                stockCardElements
+                    .filter(card => card.id === symbol)
+                    .forEach(card => showErrorMessagesForElement(card));
+            }
+
+     
+            await new Promise(r => setTimeout(r, 500)); 
+
+        } catch (error) {
+            console.error(`Finnhub hatası (${symbol}):`, error);
         }
-
-        // --- ALTIN (ONS)   ---
-        //Burayi tamamlayamadim simdilik iptal
-        //const goldResponse = await fetch(``);
-        //const goldData = await usdResponse.json();
-
-
-        initialDataLoaded = true; 
-
-    } catch (error) {
-        console.error("Döviz/Maden veri çekme basarisiz:", error);
-        showErrorMessagesForElement(usdElement);
-        //showErrorMessagesForElement(goldElement);
     }
-}//CANCELLED!!
+    initialDataLoaded = true;
+}
+
 
 
 function setupStockCarousel() {
@@ -462,34 +464,23 @@ function livelyPropertyListener(name, val) {
 
 
 async function startFetchingData() {
-    
-    await loadApiKey(); 
+    await loadApiKey(); // Finnhub 
     const imagesLoaded = await fetchImageLists();   
-    setupCryptoCarousel()
-    setupStockCarousel()
-
+    
+    setupCryptoCarousel();
+    setupStockCarousel(); 
 
     if (imagesLoaded) {
         changeBackgroundRandomly();
-        setInterval(changeBackgroundRandomly, 900000); // 15 dk
-    } else {
-        console.error("ERROR Images couldn't load.");
+        setInterval(changeBackgroundRandomly, 900000); 
     }
 
-
-
-
     fetchCryptoData(); 
-    fetchNasdaqData();
-    //fetchMetalData(); 
+    fetchNasdaqData(); 
     
     setInterval(fetchCryptoData, 60000); 
-    setInterval(fetchNasdaqData, 120000);
-
-    //setInterval(fetchMetalData, 60000); 
-    //setInterval(changeBackgroundRandomly, 900000); // 15 dk
-
-
+    setInterval(fetchNasdaqData, 60000); 
+   
     setTimeout(() => {
         if (!initialDataLoaded) {
             console.log("Başlangıç verileri yüklenemedi.");
@@ -497,11 +488,9 @@ async function startFetchingData() {
             stockCardElements.forEach(card => showErrorMessagesForElement(card));
         }
     }, 7000);
-
 }
 
 startFetchingData();
-
 
 
 
