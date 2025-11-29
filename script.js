@@ -122,17 +122,35 @@ function createCryptoCard(idPrefix, symbol, displayName) {
     return cardDiv;
 }
 
+function createCardHTML(idPrefix, symbol, name) {
+    const cardDiv = document.createElement('div');
+    cardDiv.className = 'crypto-card'; 
+    cardDiv.innerHTML = `
+        <div class="item">
+            <span class="symbol">${symbol}</span>
+            <span class="price" id="${idPrefix}">${name} Yükleniyor...</span>
+            <span class="change">0.00%</span>
+        </div>
+    `;
+    return cardDiv;
+}
 
 
 function setupCryptoCarousel() {
-    const carouselContainer = document.querySelector('.crypto-carousel');
-    carouselContainer.innerHTML = ''; //temizle
+    const container = document.querySelector('.crypto-carousel');
+    if (!container) return;
+    
 
-
+    container.innerHTML = '';
+    cryptoCardElements = []; // listeyi sıfırla
+    
+    // 1.
     const originalCards = cryptoSymbols.map((symbol, index) => {
         const idPrefix = cryptoDisplayNames[index].toLowerCase();
         const card = createCryptoCard(idPrefix, symbol, cryptoDisplayNames[index]);
-        carouselContainer.appendChild(card);
+        container.appendChild(card);
+        
+
         cryptoCardElements.push({
             id: idPrefix,
             element: card.querySelector('.price'),
@@ -142,47 +160,23 @@ function setupCryptoCarousel() {
         return card;
     });
 
-    //3 set kart / orijinal + 2 kopya
-    const numberOfCopiesForSeamlessLoop = 2; 
-    for (let i = 0; i < numberOfCopiesForSeamlessLoop; i++) {
-        originalCards.forEach((card, index) => {
-            const clonedCard = card.cloneNode(true); 
 
-            //id leri değiştir
-            const originalPriceId = cryptoDisplayNames[index].toLowerCase();
+    originalCards.forEach(card => {
+        const clone = card.cloneNode(true);
 
-            
-            clonedCard.querySelector('.price').id = `${originalPriceId}${i + 1 + originalCards.length}`; 
-            
-            cryptoCardElements.push({
-                id: clonedCard.querySelector('.price').id,
-                element: clonedCard.querySelector('.price'),
-                changeElement: clonedCard.querySelector('.change'),
-                symbolElement: clonedCard.querySelector('.symbol')
-            });
-            carouselContainer.appendChild(clonedCard);
+        clone.setAttribute('aria-hidden', 'true'); 
+        container.appendChild(clone);
+
+        cryptoCardElements.push({
+            id: clone.querySelector('.symbol').innerText.toLowerCase(), 
+            element: clone.querySelector('.price'),
+            changeElement: clone.querySelector('.change'),
+            symbolElement: clone.querySelector('.symbol')
         });
-    }
+    });
 
-    // Animasyon kaydırma mesafesini hesapla
 
-    const firstCard = originalCards[0]; //ilk kart
-    if (firstCard) {
-        const cardComputedStyle = getComputedStyle(firstCard);
-        const cardWidth = firstCard.offsetWidth; 
-        const marginRight = parseFloat(cardComputedStyle.marginRight); // sağ
-
-   
-        const totalOriginalWidth = (cardWidth + marginRight) * originalCards.length;
-        
-
-        carouselContainer.style.setProperty('--scroll-distance', `-${totalOriginalWidth}px`);
-    } else {
-        console.warn("Kripto kartları oluşturulamadı, kaydırma mesafesi ayarlanamadı.");
-    }
 }
-
-
 function showErrorMessagesForElement(targetElement) {
     let priceEl, changeEl;
     if (targetElement.querySelector) {
@@ -354,80 +348,89 @@ async function fetchNasdaqData() {
     initialDataLoaded = true;
 }
 
+function startSmoothScroll(container, durationSeconds, direction = 'left') {
+    // durdurabilmek için burayı ekliyorum
+    if (container.animationId) {
+        cancelAnimationFrame(container.animationId);
+    }
 
+    //  render bekle
+    setTimeout(() => {
+        const allCards = Array.from(container.children);
+        const halfLength = Math.floor(allCards.length / 2);
+        
+        // İlk yarının tam genişliğini hesapla
+        let totalWidth = 0;
+        for (let i = 0; i < halfLength; i++) {
+            const rect = allCards[i].getBoundingClientRect();
+            totalWidth += rect.width;
+        }
+        
+ 
+        totalWidth += (halfLength - 1) * 20;
+
+        let position = direction === 'right' ? -totalWidth : 0;
+        const pixelsPerFrame = (totalWidth / durationSeconds) / 60;
+
+        function animate() {
+            if (direction === 'left') {
+                position -= pixelsPerFrame;
+                
+ 
+                if (position <= -totalWidth) {
+                    position = 0;
+                }
+            } else {
+                position += pixelsPerFrame;
+                
+ 
+                if (position >= 0) {
+                    position = -totalWidth;
+                }
+            }
+            
+            container.style.transform = `translateX(${position}px)`;
+            container.animationId = requestAnimationFrame(animate);
+        }
+
+        container.animationId = requestAnimationFrame(animate);
+    }, 100); 
+}
 
 function setupStockCarousel() {
     const container = document.querySelector('.stock-carousel');
-    
-    // Eğer HTML'de bu class yoksa işlemi durdur
     if (!container) return;
-
-    // Önceki içeriği temizle
-    // Livelyden ayar değişirse üst üste binmesin
+    
     container.innerHTML = '';
-    stockCardElements = []; 
-
-
-
-    // Orijinal Kartları Oluştur ---
+    stockCardElements = [];
+    
+    // 1. 
     const originalCards = stockSymbols.map(symbol => {
-        const card = createStockCard(symbol);
-        container.appendChild(card); // ekle
-
-        // kartı listesine al 
+        const card = createCardHTML(symbol, symbol, symbol); // createCardHTML
+        container.appendChild(card);
+        
         stockCardElements.push({
-            id: symbol, 
+            id: symbol,
             element: card.querySelector('.price'),
             changeElement: card.querySelector('.change'),
             symbolElement: card.querySelector('.symbol')
         });
         return card;
-    });//
+    });
 
-
-
-    // Klonları Oluştur ---
-    const copyCount = 2; 
-    
-    for (let i = 0; i < copyCount; i++) {
-        originalCards.forEach(card => {
-
-            const clonedCard = card.cloneNode(true);
-            
-
-            const symbol = card.querySelector('.symbol').innerText;
-
-            stockCardElements.push({
-                id: symbol, // ID yine aynı 
-                element: clonedCard.querySelector('.price'),
-                changeElement: clonedCard.querySelector('.change'),
-                symbolElement: clonedCard.querySelector('.symbol')
-            });
-
-            container.appendChild(clonedCard); // Klonu ekle
+    // 2. Klonlar
+    originalCards.forEach(card => {
+        const clone = card.cloneNode(true);
+        container.appendChild(clone);
+        
+        stockCardElements.push({
+            id: clone.querySelector('.symbol').innerText,
+            element: clone.querySelector('.price'),
+            changeElement: clone.querySelector('.change'),
+            symbolElement: clone.querySelector('.symbol')
         });
-    }
-
-
-    
-
-    // Animasyon Mesafesini Hesapla ---
-    // İlk kartı ölç
-    const firstCard = originalCards[0];
-    if (firstCard) {
-        const style = getComputedStyle(firstCard);
-        const width = firstCard.offsetWidth; // Kart genişliği
-        const margin = parseFloat(style.marginRight); // Sağ boşluk
-        
-        // Bir setin toplam genişliği
-        const totalWidth = (width + margin) * originalCards.length;
-        
-
-        container.style.setProperty('--stock-scroll-distance', `-${totalWidth}px`);
-    }
-}//setupStockCarousel
-
-
+    });
+}
 function createStockCard(symbol) {
 
     const cardDiv = document.createElement('div');
@@ -456,11 +459,13 @@ function livelyPropertyListener(name, val) {
         fetchNasdaqData();
     }
     if (name === "stockScrollSpeed") {
-        const carousel = document.querySelector('.stock-carousel');
-        if(carousel) carousel.style.animationDuration = val + 's';
+  
+        document.documentElement.style.setProperty('--stock-scroll-speed', val + 's');
+    }
+    if (name === "cryptoScrollSpeed") {
+        document.documentElement.style.setProperty('--crypto-scroll-speed', val + 's');
     }
 }
-
 
 
 async function startFetchingData() {
