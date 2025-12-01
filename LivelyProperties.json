@@ -1,20 +1,57 @@
 {
-    "AppVersion": "1.0.0.0",
-    "prop": {
-        "stockSymbolList": {
-            "text": "Hisse Senetleri ",
-            "type": "textbox",
-            "value": "AAPL, MSFT, TSLA"
+    
+    "header_custom": { "type": "label", "value": "--- CUSTOM SYMBOLS ---" },
+    "customStockList": {
+        "type": "textbox",
+        "value": "",
+        "text": "Add Extra Symbols",
+        "desc": "Enter symbols separated by comma (e.g., AMD, INTC, IBM)"
+    },
 
-        },
-        "stockScrollSpeed": {
-            "text": "Hisse Kayma Hızı (Saniye)",
-            "type": "slider",
-            "min": 10,
-            "max": 100,
-            "value": 35,
-            "step": 1
-        }
-   
+    "header_tech": { "type": "label", "value": "--- TECHNOLOGY ---" },
+    "stock_AAPL": { "type": "checkbox", "value": true, "text": "AAPL | Apple Inc." },
+    "stock_MSFT": { "type": "checkbox", "value": true, "text": "MSFT | Microsoft" },
+    "stock_GOOGL": { "type": "checkbox", "value": true, "text": "GOOGL | Google" },
+    "stock_AMZN": { "type": "checkbox", "value": true, "text": "AMZN | Amazon" },
+    "stock_NVDA": { "type": "checkbox", "value": true, "text": "NVDA | NVIDIA" },
+    "stock_META": { "type": "checkbox", "value": false, "text": "META | Meta Platforms" },
+    "stock_NFLX": { "type": "checkbox", "value": false, "text": "NFLX | Netflix" },
+    "stock_TSM": { "type": "checkbox", "value": false, "text": "TSM | TSMC" },
+    "stock_ORCL": { "type": "checkbox", "value": false, "text": "ORCL | Oracle" },
+
+    "header_auto": { "type": "label", "value": "--- AUTOMOTIVE ---" },
+    "stock_TSLA": { "type": "checkbox", "value": true, "text": "TSLA | Tesla" },
+    "stock_TM": { "type": "checkbox", "value": false, "text": "TM | Toyota" },
+    "stock_F": { "type": "checkbox", "value": false, "text": "F | Ford Motor" },
+
+    "header_finance": { "type": "label", "value": "--- FINANCE ---" },
+    "stock_JPM": { "type": "checkbox", "value": false, "text": "JPM | JPMorgan" },
+    "stock_V": { "type": "checkbox", "value": false, "text": "V | Visa" },
+    "stock_MA": { "type": "checkbox", "value": false, "text": "MA | Mastercard" },
+    "stock_PYPL": { "type": "checkbox", "value": false, "text": "PYPL | PayPal" },
+
+    "header_consumer": { "type": "label", "value": "--- CONSUMER & OTHERS ---" },
+    "stock_KO": { "type": "checkbox", "value": false, "text": "KO | Coca-Cola" },
+    "stock_PEP": { "type": "checkbox", "value": false, "text": "PEP | PepsiCo" },
+    "stock_SBUX": { "type": "checkbox", "value": false, "text": "SBUX | Starbucks" },
+    "stock_MCD": { "type": "checkbox", "value": false, "text": "MCD | McDonald's" },
+    "stock_DIS": { "type": "checkbox", "value": false, "text": "DIS | Disney" },
+
+    "header_speed": { "type": "label", "value": "--- ANIMATION SPEED ---" },
+    "stockScrollSpeed": {
+        "type": "slider",
+        "value": 40,
+        "min": 10,
+        "max": 120,
+        "step": 1,
+        "text": "Stock Scroll Speed (sec)"
+    },
+    "cryptoScrollSpeed": {
+        "type": "slider",
+        "value": 30,
+        "min": 10,
+        "max": 120,
+        "step": 1,
+        "text": "Crypto Scroll Speed (sec)"
     }
 }
