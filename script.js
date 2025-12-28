@@ -1,59 +1,122 @@
-
 const usdElement = document.getElementById('usd');
-//const goldElement = document.getElementById('gold');
-
 
 let initialDataLoaded = false;
+let finnhub_api_key = '';
+
 let cryptoCardElements = [];
-
-//burayi ileride bir txt den çakeicem herkes kendi apisini olusurup txt ye atacak
-//txt live serverda gözükmüyo jon aldim
-let ALPHA_VANTAGE_API_KEY = '';//burayi vermiyicem 500 api istek siniri var
-
-//sembol ayarlari
 const cryptoSymbols = ['bitcoin', 'ethereum', 'ripple'];
 const cryptoDisplayNames = ['BTC', 'ETH', 'XRP'];
 
+let stockCardElements = []; 
+let stockSymbols = []; 
+let activeCheckboxes = {}; 
+let customStockString = ""; 
+
+let morningImages = [];
+let nightImages = [];
+
 async function loadApiKey() {
-console.log("API_Key.json okunuyor..."); 
     try {
         const response = await fetch('api_key.json'); 
-
-        if (!response.ok) {
-            console.error(`api_key.json dosyasi bulunamadi veya erisilemedi: ${response.status} ${response.statusText}`);
-            return null;
-        }
-
+        if (!response.ok) return null;
         const jsonData = await response.json(); 
-
-        if (jsonData && jsonData.api_key && typeof jsonData.api_key === 'string' && jsonData.api_key.trim().length > 1) {
-            ALPHA_VANTAGE_API_KEY = jsonData.api_key.trim(); 
-            console.log("API Anahtari basariyla okundu.");
-            return ALPHA_VANTAGE_API_KEY;
+   
+        if (jsonData && jsonData.api_key && jsonData.api_key.trim().length > 1) {
+            finnhub_api_key = jsonData.api_key.trim(); 
+            return finnhub_api_key;
         } else {
-            console.error("api_key.json dosyasi bos veya 'api_key' anahtari içermiyor.");
             return null;
         }
-
-    } catch (hata) {
-        console.error('api_key.json okuma hatasi:', hata);
+    } catch (error) {
         return null;
     }
 }
 
-function updateDisplay(cardObject, price, change) {
+async function fetchImageLists() {
+    try {
+        const response = await fetch('image-list.json'); 
+        if (!response.ok) throw new Error(`image-list.json not found: ${response.status}`);
+        
+        const data = await response.json();
 
-    cardObject.element.innerText = `$${price.toLocaleString('en-US')}`;
+        if (data.morningImages && data.nightImages) {
+            morningImages = data.morningImages; 
+            nightImages = data.nightImages; 
+            
+            if (morningImages.length === 0 && nightImages.length === 0) {
+                return false;
+            }
+            return true;
+        } else {
+            throw new Error("Invalid image-list.json format.");
+        }
+    } catch (error) {
+        return false;
+    }
+}
 
-    const changeElement = cardObject.changeElement; 
-    changeElement.innerText = `${change.toFixed(2)}%`;
+function updateDisplay(target, price, change) {
+    let priceEl, changeEl;
 
-    if (change > 0) {
-        changeElement.className = 'change increase'; //yesil
-    } else if (change < 0) {
-        changeElement.className = 'change decrease'; //kirmizi
+    if (target.querySelector) { 
+        priceEl = target.querySelector('.price');
+        changeEl = target.querySelector('.change');
+    } else if (target.element) {
+        priceEl = target.element;
+        changeEl = target.changeElement;
+    }
+
+    if (!priceEl || !changeEl) return;
+
+    priceEl.innerText = `$${price.toLocaleString('en-US')}`;
+
+    const changeVal = typeof change === 'string' ? parseFloat(change.replace('%', '')) : change;
+    changeEl.innerText = `${changeVal.toFixed(2)}%`;
+
+    if (changeVal > 0) {
+        changeEl.className = 'change increase'; 
+    } else if (changeVal < 0) {
+        changeEl.className = 'change decrease'; 
     } else {
-        changeElement.className = 'change'; //nötr
+        changeEl.className = 'change'; 
+    }
+}
+
+function showErrorMessagesForElement(targetElement) {
+    let priceEl, changeEl;
+    if (targetElement.querySelector) {
+        priceEl = targetElement.querySelector('.price');
+        changeEl = targetElement.querySelector('.change');
+    } else if (targetElement.element) {
+        priceEl = targetElement.element;
+        changeEl = targetElement.changeElement;
+    }
+
+    if (priceEl) priceEl.innerText = "No Data";
+    if (changeEl) {
+        changeEl.innerText = ""; 
+        changeEl.className = 'change'; 
+    }
+}
+
+async function changeBackgroundRandomly() {
+    const now = new Date();
+    const currentHour = now.getHours(); 
+    let selectedList;
+
+    if (currentHour >= 6 && currentHour < 18) { 
+        selectedList = morningImages;
+    } else {
+        selectedList = nightImages;
+    }
+
+    if (!selectedList || selectedList.length === 0) return;
+
+    const randomIndex = Math.floor(Math.random() * selectedList.length);
+    const randomImage = selectedList[randomIndex];
+
+    if (randomImage) {
+        document.body.style.backgroundImage = `url('${randomImage}')`;
     }
 }
 
@@ -63,24 +126,38 @@ function createCryptoCard(idPrefix, symbol, displayName) {
     cardDiv.innerHTML = `
         <div class="item">
             <span class="symbol">${displayName}</span>
-            <span class="price" id="${idPrefix}">${displayName} Veri Yok</span>
+            <span class="price" id="${idPrefix}">Loading...</span>
             <span class="change">0.00%</span>
         </div>
     `;
     return cardDiv;
 }
 
-
+function createStockCard(symbol) {
+    const cardDiv = document.createElement('div');
+    cardDiv.className = 'crypto-card'; 
+    cardDiv.innerHTML = `
+        <div class="item">
+            <span class="symbol">${symbol}</span>
+            <span class="price">Loading...</span>
+            <span class="change">0.00%</span>
+        </div>
+    `;
+    return cardDiv;
+}
 
 function setupCryptoCarousel() {
-    const carouselContainer = document.querySelector('.crypto-carousel');
-    carouselContainer.innerHTML = ''; //temizle
-
-
+    const container = document.querySelector('.crypto-carousel');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    cryptoCardElements = [];
+    
     const originalCards = cryptoSymbols.map((symbol, index) => {
         const idPrefix = cryptoDisplayNames[index].toLowerCase();
         const card = createCryptoCard(idPrefix, symbol, cryptoDisplayNames[index]);
-        carouselContainer.appendChild(card);
+        container.appendChild(card);
+        
         cryptoCardElements.push({
             id: idPrefix,
             element: card.querySelector('.price'),
@@ -90,184 +167,256 @@ function setupCryptoCarousel() {
         return card;
     });
 
-    //3 set kart / orijinal + 2 kopya
-    const numberOfCopiesForSeamlessLoop = 2; 
-    for (let i = 0; i < numberOfCopiesForSeamlessLoop; i++) {
-        originalCards.forEach((card, index) => {
-            const clonedCard = card.cloneNode(true); 
-
-            //id leri değiştir
-            const originalPriceId = cryptoDisplayNames[index].toLowerCase();
-
-            
-            clonedCard.querySelector('.price').id = `${originalPriceId}${i + 1 + originalCards.length}`; 
-            
-            cryptoCardElements.push({
-                id: clonedCard.querySelector('.price').id,
-                element: clonedCard.querySelector('.price'),
-                changeElement: clonedCard.querySelector('.change'),
-                symbolElement: clonedCard.querySelector('.symbol')
-            });
-            carouselContainer.appendChild(clonedCard);
-        });
-    }
-
-    // Animasyon kaydırma mesafesini hesapla
-
-    const firstCard = originalCards[0]; //ilk kart
-    if (firstCard) {
-        const cardComputedStyle = getComputedStyle(firstCard);
-        const cardWidth = firstCard.offsetWidth; 
-        const marginRight = parseFloat(cardComputedStyle.marginRight); // sağ
-
-   
-        const totalOriginalWidth = (cardWidth + marginRight) * originalCards.length;
+    originalCards.forEach(card => {
+        const clone = card.cloneNode(true);
+        clone.setAttribute('aria-hidden', 'true'); 
+        container.appendChild(clone);
         
-
-        carouselContainer.style.setProperty('--scroll-distance', `-${totalOriginalWidth}px`);
-    } else {
-        console.warn("Kripto kartları oluşturulamadı, kaydırma mesafesi ayarlanamadı.");
-    }
+        cryptoCardElements.push({
+            id: clone.querySelector('.symbol').innerText.toLowerCase(),
+            element: clone.querySelector('.price'),
+            changeElement: clone.querySelector('.change'),
+            symbolElement: clone.querySelector('.symbol')
+        });
+    });
 }
 
-
-
-function showErrorMessagesForElement(targetElement) {
+function setupStockCarousel() {
+    const container = document.querySelector('.stock-carousel');
+    if (!container) return;
     
-    if (targetElement.querySelector) { 
-   
-        targetElement.querySelector('.price').innerText = "Verilere ulasilamadi";
-        targetElement.querySelector('.change').innerText = ""; 
-        targetElement.querySelector('.change').className = 'change'; 
-    } else if (targetElement.element) {
-  
-        targetElement.element.innerText = "Verilere ulasilamadi";
-        targetElement.changeElement.innerText = "";
-        targetElement.changeElement.className = 'change';
-    } else {
-      
-        console.warn("showErrorMessagesForElement: Geçersiz element alindi.", targetElement);
+    container.innerHTML = '';
+    stockCardElements = [];
+    
+    if (stockSymbols.length === 0) return;
+
+    const originalCards = stockSymbols.map(symbol => {
+        const card = createStockCard(symbol);
+        container.appendChild(card);
+        
+        stockCardElements.push({
+            id: symbol,
+            element: card.querySelector('.price'),
+            changeElement: card.querySelector('.change'),
+            symbolElement: card.querySelector('.symbol')
+        });
+        return card;
+    });
+
+    originalCards.forEach(card => {
+        const clone = card.cloneNode(true);
+        clone.setAttribute('aria-hidden', 'true');
+        container.appendChild(clone);
+        
+        stockCardElements.push({
+            id: clone.querySelector('.symbol').innerText,
+            element: clone.querySelector('.price'),
+            changeElement: clone.querySelector('.change'),
+            symbolElement: clone.querySelector('.symbol')
+        });
+    });
+}
+
+function getCachedData(key, ttlSeconds = 55) {
+    const cached = localStorage.getItem(key);
+    if (!cached) return null;
+
+    try {
+        const parsed = JSON.parse(cached);
+        const now = Date.now();
+        if (now - parsed.timestamp < ttlSeconds * 1000) {
+            return parsed.data;
+        }
+    } catch (e) {
+        return null;
     }
+    return null;
 }
 
-function CompareValues(old, neww) {
-    var c ;
-    var ratio;
-    c=neww-old;
-    ratio=c/neww;
-  return ratio
+function setCachedData(key, data) {
+    const payload = {
+        timestamp: Date.now(),
+        data: data
+    };
+    localStorage.setItem(key, JSON.stringify(payload));
 }
-
 
 async function fetchCryptoData() {
-    console.log("Kripto veriler çekiliyor...");
-    try {
-        const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,ripple&vs_currencies=usd&include_24hr_change=true');
-        if (!response.ok) {
-            throw new Error(`CoinGecko API hatasi: ${response.status}`);
-        }
-        const data = await response.json();
-        
- 
+    const cacheKey = 'crypto_data_cache';
+    const cachedData = getCachedData(cacheKey);
+
+    if (cachedData) {
+        const data = cachedData;
         cryptoSymbols.forEach((symbolKey, index) => {
             if (data[symbolKey]) {
                 const price = data[symbolKey].usd;
                 const change = data[symbolKey].usd_24h_change;
-
-           
-                cryptoCardElements.filter(item => item.id.startsWith(cryptoDisplayNames[index].toLowerCase())).forEach(card => {
-                    card.symbolElement.innerText = cryptoDisplayNames[index]; 
-                    updateDisplay(card, price, change); 
-                });
-            } else {
-
-                cryptoCardElements.filter(item => item.id.startsWith(cryptoDisplayNames[index].toLowerCase())).forEach(card => {
-                    showErrorMessagesForElement(card); 
-                });
+                
+                cryptoCardElements
+                    .filter(item => item.id.startsWith(cryptoDisplayNames[index].toLowerCase()))
+                    .forEach(card => updateDisplay(card, price, change));
             }
         });
-        initialDataLoaded = true; 
-
-    } catch (error) {
-        console.error("Kripto veri çekme basarisiz:", error);
-        // Tüm kripto kartlarina hata mesaji göster
-        cryptoCardElements.forEach(card => showErrorMessagesForElement(card));
-    }
-}
-
-async function fetchMetalData() {
-    console.log("Döviz/Maden veriler çekiliyor...");
-
-
-    if (!ALPHA_VANTAGE_API_KEY) {
-        console.error("Alpha Vantage API anahtari henüz yüklenmedi veya geçersiz.");
-        showErrorMessagesForElement(usdElement);
-        //showErrorMessagesForElement(goldElement);
         return; 
     }
 
     try {
-        // --- DOLAR/TL Kuru ---
-        const usdResponse = await fetch(`https://www.alphavantage.co/query?function=CURRENCY_EXCHANGE_RATE&from_currency=USD&to_currency=TRY&apikey=${ALPHA_VANTAGE_API_KEY}`);
-        const usdData = await usdResponse.json();
+        const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,ripple&vs_currencies=usd&include_24hr_change=true');
+        if (!response.ok) throw new Error(`CoinGecko API Error: ${response.status}`);
+        const data = await response.json();
+        
+        setCachedData(cacheKey, data);
 
-        if (usdData["Error Message"] || usdData["Note"]) {
-             console.error(`Alpha Vantage Dolar API hatasi: ${usdData["Error Message"] || usdData["Note"]}`);
-             showErrorMessagesForElement(usdElement);
-        } else if (usdData["Realtime Currency Exchange Rate"] && usdData["Realtime Currency Exchange Rate"]["5. Exchange Rate"]) {
-            const usdPrice = parseFloat(usdData["Realtime Currency Exchange Rate"]["5. Exchange Rate"]);
-            const usdChange = (Math.random() * 2) - 1; 
-            updateDisplay(usdElement, usdPrice, usdChange);
-            usdElement.querySelector('.symbol').innerText = "DOLAR (TL)";
-        } else {
-            console.warn("Alpha Vantage'den Dolar/TL verisi gelmedi veya format hatali.");
-            showErrorMessagesForElement(usdElement);
+        cryptoSymbols.forEach((symbolKey, index) => {
+            if (data[symbolKey]) {
+                const price = data[symbolKey].usd;
+                const change = data[symbolKey].usd_24h_change;
+                
+                cryptoCardElements
+                    .filter(item => item.id.startsWith(cryptoDisplayNames[index].toLowerCase()))
+                    .forEach(card => updateDisplay(card, price, change));
+            } else {
+                cryptoCardElements
+                    .filter(item => item.id.startsWith(cryptoDisplayNames[index].toLowerCase()))
+                    .forEach(card => showErrorMessagesForElement(card));
+            }
+        });
+    } catch (error) {
+        cryptoCardElements.forEach(card => showErrorMessagesForElement(card));
+    }
+}
+
+async function fetchNasdaqData() {
+    if (!finnhub_api_key) {
+        stockCardElements.forEach(card => showErrorMessagesForElement(card));
+        return; 
+    }
+
+    if (stockSymbols.length === 0) return;
+
+    for (const symbol of stockSymbols) {
+        const cacheKey = `stock_${symbol}`;
+        const cachedData = getCachedData(cacheKey);
+
+        if (cachedData) {
+             stockCardElements
+                .filter(card => card.id === symbol)
+                .forEach(card => updateDisplay(card, cachedData.price, cachedData.change));
+             continue; 
         }
 
-        // --- ALTIN (ONS)   ---
-        //Burayi tamamlayamadim simdilik iptal
-        //const goldResponse = await fetch(``);
-        //const goldData = await usdResponse.json();
+        try {
+            const response = await fetch(`https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${finnhub_api_key}`);
+            const data = await response.json();
 
+            if (data && data.c != null) {
+                const price = data.c;  
+                const change = data.dp; 
 
-        initialDataLoaded = true; 
+                setCachedData(cacheKey, { price, change });
 
-    } catch (error) {
-        console.error("Döviz/Maden veri çekme basarisiz:", error);
-        showErrorMessagesForElement(usdElement);
-        //showErrorMessagesForElement(goldElement);
+                stockCardElements
+                    .filter(card => card.id === symbol)
+                    .forEach(card => updateDisplay(card, price, change));
+            } else {
+                stockCardElements
+                    .filter(card => card.id === symbol)
+                    .forEach(card => showErrorMessagesForElement(card));
+            }
+
+            await new Promise(r => setTimeout(r, 300)); 
+
+        } catch (error) {
+            console.error(error);
+        }
+    }
+    initialDataLoaded = true;
+}
+
+function updateStockList() {
+    let combinedList = [];
+
+    for (const [key, isChecked] of Object.entries(activeCheckboxes)) {
+        if (isChecked && key.startsWith('stock_')) {
+            const symbol = key.replace('stock_', '');
+            combinedList.push(symbol);
+        }
+    }
+
+    if (customStockString && customStockString.trim().length > 0) {
+        const customItems = customStockString
+            .split(',')
+            .map(s => s.trim().toUpperCase())
+            .filter(s => s.length > 0);
+        
+        combinedList = combinedList.concat(customItems);
+    }
+
+    combinedList = [...new Set(combinedList)];
+
+    if (combinedList.length > 25) {
+        combinedList = combinedList.slice(0, 25);
+    }
+
+    if (combinedList.length === 0) {
+        combinedList = ['AAPL', 'MSFT', 'TSLA', 'NVDA', 'AMZN']; 
+    }
+
+    stockSymbols = combinedList;
+    setupStockCarousel();
+    fetchNasdaqData();
+}
+
+function livelyPropertyListener(name, val) {
+    if (name === "stockScrollSpeed") {
+        document.documentElement.style.setProperty('--stock-scroll-speed', val + 's');
+        return;
+    }
+    if (name === "cryptoScrollSpeed") {
+        document.documentElement.style.setProperty('--crypto-scroll-speed', val + 's');
+        return;
+    }
+
+    if (name === "customStockList") {
+        customStockString = val;
+        updateStockList();
+        return;
+    }
+
+    if (name.startsWith('stock_')) {
+        activeCheckboxes[name] = val;
+        updateStockList();
     }
 }
 
 async function startFetchingData() {
     await loadApiKey(); 
-    setupCryptoCarousel()
+    const imagesLoaded = await fetchImageLists();   
+    
+    setupCryptoCarousel();
+    
+    if (stockSymbols.length === 0) {
+        stockSymbols = ['AAPL', 'MSFT', 'TSLA', 'NVDA', 'AMZN'];
+        setupStockCarousel();
+    }
+
+    if (imagesLoaded) {
+        changeBackgroundRandomly();
+        setInterval(changeBackgroundRandomly, 900000); 
+    }
+
     fetchCryptoData(); 
-    fetchMetalData(); 
+    fetchNasdaqData(); 
     
     setInterval(fetchCryptoData, 60000); 
-    setInterval(fetchMetalData, 60000); 
-
+    setInterval(fetchNasdaqData, 60000); 
    
     setTimeout(() => {
-    if (!initialDataLoaded) {
-        console.log("5 saniye doldu ve veri yüklenemedi. Hata mesajlari gösteriliyor.");
-        
- 
-        cryptoCardElements.forEach(card => {
-            showErrorMessagesForElement(card); // card bir obje
-        });
-       
-        showErrorMessagesForElement(usdElement);
-        //showErrorMessagesForElement(goldElement); 
-    }
-}, 5000); // 5 sn
-
+        if (!initialDataLoaded) {
+            cryptoCardElements.forEach(card => showErrorMessagesForElement(card));
+            stockCardElements.forEach(card => showErrorMessagesForElement(card));
+        }
+    }, 10000);
 }
 
 startFetchingData();
-
-
-
-
-

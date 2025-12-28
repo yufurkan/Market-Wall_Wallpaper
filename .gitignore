@@ -1,3 +1,4 @@
 *.txt
-*.json
-*.jpg
+#*.json
+#.jpg
+api_key.json
