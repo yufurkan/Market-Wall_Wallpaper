@@ -9,6 +9,7 @@
     },
 
     "header_tech": { "type": "label", "value": "--- TECHNOLOGY ---" },
+
     "stock_AAPL": { "type": "checkbox", "value": true, "text": "AAPL | Apple Inc." },
     "stock_MSFT": { "type": "checkbox", "value": true, "text": "MSFT | Microsoft" },
     "stock_GOOGL": { "type": "checkbox", "value": true, "text": "GOOGL | Google" },
@@ -20,22 +21,43 @@
     "stock_ORCL": { "type": "checkbox", "value": false, "text": "ORCL | Oracle" },
 
     "header_auto": { "type": "label", "value": "--- AUTOMOTIVE ---" },
+
     "stock_TSLA": { "type": "checkbox", "value": true, "text": "TSLA | Tesla" },
     "stock_TM": { "type": "checkbox", "value": false, "text": "TM | Toyota" },
     "stock_F": { "type": "checkbox", "value": false, "text": "F | Ford Motor" },
 
     "header_finance": { "type": "label", "value": "--- FINANCE ---" },
+
     "stock_JPM": { "type": "checkbox", "value": false, "text": "JPM | JPMorgan" },
     "stock_V": { "type": "checkbox", "value": false, "text": "V | Visa" },
     "stock_MA": { "type": "checkbox", "value": false, "text": "MA | Mastercard" },
     "stock_PYPL": { "type": "checkbox", "value": false, "text": "PYPL | PayPal" },
 
     "header_consumer": { "type": "label", "value": "--- CONSUMER & OTHERS ---" },
+
     "stock_KO": { "type": "checkbox", "value": false, "text": "KO | Coca-Cola" },
     "stock_PEP": { "type": "checkbox", "value": false, "text": "PEP | PepsiCo" },
     "stock_SBUX": { "type": "checkbox", "value": false, "text": "SBUX | Starbucks" },
     "stock_MCD": { "type": "checkbox", "value": false, "text": "MCD | McDonald's" },
     "stock_DIS": { "type": "checkbox", "value": false, "text": "DIS | Disney" },
+
+
+    "header_crypto": { "type": "label", "value": "--- CRYPTO SELECTION ---" },
+    "customCryptoList": {
+        "type": "textbox",
+        "value": "",
+        "text": "Add Extra Cryptos",
+        "desc": "Enter CoinGecko IDs separated by comma (e.g. solana, polkadot)"
+    },
+    "crypto_bitcoin": { "type": "checkbox", "value": true, "text": "BTC | bitcoin" },
+    "crypto_ethereum": { "type": "checkbox", "value": true, "text": "ETH | ethereum" },
+    "crypto_ripple": { "type": "checkbox", "value": true, "text": "XRP | ripple" },
+    "crypto_dogecoin": { "type": "checkbox", "value": false, "text": "DOGE | dogecoin" },
+    "crypto_cardano": { "type": "checkbox", "value": false, "text": "ADA | cardano" },
+    "crypto_binancecoin": { "type": "checkbox", "value": false, "text": "BNB | binancecoin" },
+    "crypto_solana": { "type": "checkbox", "value": false, "text": "SOL | solana" },
+    "crypto_shiba-inu": { "type": "checkbox", "value": false, "text": "SHIB | shiba-inu" },
+
 
     "header_speed": { "type": "label", "value": "--- ANIMATION SPEED ---" },
     "stockScrollSpeed": {
