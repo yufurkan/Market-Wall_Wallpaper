@@ -145,7 +145,6 @@ async function changeBackgroundRandomly() {
     }
 }
 
-// DEĞIŞTI: Crypto card artık doğrudan symbol gösteriyor (BTC, ETH vs)
 function createCryptoCard(symbol, displayName) {
     const cardDiv = document.createElement('div');
     cardDiv.className = 'crypto-card';
@@ -172,7 +171,7 @@ function createStockCard(symbol) {
     return cardDiv;
 }
 
-// DEĞIŞTI: Crypto carousel artık symbol mapping kullanıyor
+// DEĞIŞTI: Symbol mapping kaldırıldı, placeholder olarak coinId gösteriliyor (API'den symbol gelecek)
 function setupCryptoCarousel() {
     const container = document.querySelector('.crypto-carousel');
     if (!container) return;
@@ -180,20 +179,8 @@ function setupCryptoCarousel() {
     container.innerHTML = '';
     cryptoCardElements = [];
     
-    // Symbol mapping: API ID -> Görünen Symbol
-    const symbolMap = {
-        'bitcoin': 'BTC',
-        'ethereum': 'ETH',
-        'ripple': 'XRP',
-        'dogecoin': 'DOGE',
-        'cardano': 'ADA',
-        'binancecoin': 'BNB',
-        'solana': 'SOL',
-        'shiba-inu': 'SHIB'
-    };
-    
     const originalCards = cryptoSymbols.map(coinId => {
-        const displaySymbol = symbolMap[coinId] || coinId.toUpperCase().slice(0, 4);
+        const displaySymbol = coinId.toUpperCase();
         const card = createCryptoCard(coinId, displaySymbol);
         container.appendChild(card);
         
@@ -211,8 +198,8 @@ function setupCryptoCarousel() {
         clone.setAttribute('aria-hidden', 'true'); 
         container.appendChild(clone);
         
-        const text = clone.querySelector('.symbol').innerText;
-        const originalId = Object.keys(symbolMap).find(key => symbolMap[key] === text) || text.toLowerCase();
+        const symbolText = clone.querySelector('.symbol').innerText;
+        const originalId = symbolText.toLowerCase();
 
         cryptoCardElements.push({
             id: originalId,
@@ -259,50 +246,48 @@ function setupStockCarousel() {
     });
 }
 
-// DEĞIŞTI: Crypto fetch artık stock mantığıyla çalışıyor (her coin ayrı API çağrısı + cache)
+// DEĞIŞTI: Toplu API çağrısı (/coins/markets), symbol API'den geliyor, custom crypto desteği otomatik
 async function fetchCryptoData() {
     if (cryptoSymbols.length === 0) return;
 
-    for (const coinId of cryptoSymbols) {
-        const cacheKey = `crypto_${coinId}`;
-        const cachedData = getCachedData(cacheKey);
+    const cacheKey = 'crypto_data_cache';
+    const cachedData = getCachedData(cacheKey);
 
-        if (cachedData) {
+    const processData = (dataArray) => {
+        dataArray.forEach(coin => {
+            const price = coin.current_price;
+            const change = coin.price_change_percentage_24h;
+            const symbol = coin.symbol.toUpperCase();
+
             cryptoCardElements
-                .filter(card => card.id === coinId)
-                .forEach(card => updateDisplay(card, cachedData.price, cachedData.change));
-            continue;
-        }
+                .filter(item => item.id === coin.id)
+                .forEach(card => {
+                    updateDisplay(card, price, change);
+                    if (card.symbolElement) {
+                        card.symbolElement.innerText = symbol;
+                    }
+                });
+        });
+    };
 
-        try {
-            const response = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${coinId}&vs_currencies=usd&include_24hr_change=true`);
-            
-            if (!response.ok) throw new Error(`CoinGecko API Error: ${response.status}`);
-            const data = await response.json();
+    if (cachedData) {
+        processData(cachedData);
+        return; 
+    }
 
-            if (data && data[coinId]) {
-                const price = data[coinId].usd;
-                const change = data[coinId].usd_24h_change;
+    try {
+        const ids = cryptoSymbols.join(',');
+        const response = await fetch(`https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${ids}&sparkline=false`);
+        
+        if (!response.ok) throw new Error(`CoinGecko API Error: ${response.status}`);
+        const data = await response.json();
+        
+        setCachedData(cacheKey, data);
+        processData(data);
 
-                setCachedData(cacheKey, { price, change });
-
-                cryptoCardElements
-                    .filter(card => card.id === coinId)
-                    .forEach(card => updateDisplay(card, price, change));
-            } else {
-                cryptoCardElements
-                    .filter(card => card.id === coinId)
-                    .forEach(card => showErrorMessagesForElement(card));
-            }
-
-            await new Promise(r => setTimeout(r, 300));
-
-        } catch (error) {
-            console.error(`Crypto fetch error for ${coinId}:`, error);
-            cryptoCardElements
-                .filter(card => card.id === coinId)
-                .forEach(card => showErrorMessagesForElement(card));
-        }
+    } catch (error) {
+        console.error("Crypto Fetch Error:", error);
+        cryptoCardElements.forEach(card => showErrorMessagesForElement(card));
     }
 }
 
