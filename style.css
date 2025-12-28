@@ -2,202 +2,195 @@ body, html {
     margin: 0;
     padding: 0;
     height: 100%;
-    font-family: 'Roboto Mono', 'Consolas', 'Monaco', monospace; 
+    font-family: 'Roboto Mono', 'Consolas', 'Monaco', monospace;
     color: #ffffff;
-    overflow: hidden; 
+    overflow: hidden;
 }
-
 
 body {
     background-image: url('files/İstanbul.jpg');
     background-size: cover;
-    background-position: center center; 
+    background-position: center center;
     background-repeat: no-repeat;
 }
 
-
 .data-panel {
-    position: absolute; 
-
-    top: 50%; 
-    left: 50%; 
-    transform: translate(-50%, -50%); 
-    
-    width: clamp(80vw, 80vw, 30vw); 
-    max-height: 90vh; 
-
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: clamp(80vw, 80vw, 30vw);
+    max-height: 90vh;
     backdrop-filter: blur(1px);
-    background-color: rgba(0, 0, 0, 0.45); 
-    border: 1px solid rgba(255, 255, 255, 0.1); 
-    border-radius: 10px; 
-    padding: clamp(15px, 2vw, 30px); 
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2); 
-
-   
+    background-color: rgba(0, 0, 0, 0.45);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: clamp(15px, 2vw, 30px);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
     overflow-x: hidden;
 }
 
 .category-header {
-
-    font-size: clamp(1em, 2vw, 1.8em); 
+    font-size: clamp(1em, 2vw, 1.8em);
     font-weight: bold;
-    color: #00bcd4; 
+    color: #00bcd4;
     border-bottom: 2px solid #00bcd4;
     padding-bottom: 5px;
-    margin-bottom: clamp(10px, 1.5vw, 20px); 
-  
-    
+    margin-bottom: clamp(10px, 1.5vw, 20px);
 }
 
 .symbol {
     font-weight: bold;
     color: #eee;
-    flex-basis: 30%; 
-
-    /* küçük ekranlar için */
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis; /* Taşan yazının sonuna ... koy */
-
-}
-
-.change {
-    flex-basis: 30%; 
-    text-align: right;
-    font-weight: bold;
-}
-
-
-.item {
-    display: flex; 
-    justify-content: space-between;
-    align-items: center;
-
-
-    font-size: clamp(0.9em, 1.8vw, 1.4em); 
-    padding: clamp(8px, 1.5vw, 15px) clamp(5px, 1vw, 10px); /* added */
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-
-.price {
-    flex-basis: 40%; 
-    text-align: right;
-
-    /* Satır atlamayı engelle */
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis; 
-}
-
-.item:last-child {
-    border-bottom: none; 
-}
-
-
-.increase {
-    color: #00ff00; 
-}
-
-.decrease {
-    color: #ff0000; 
-}
-
-
-.change {
+    flex-basis: 30%;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
-
-.crypto-carousel {
-    display: flex; 
-    width: max-content; 
-    animation: scroll-left 30s linear infinite; 
-    margin-bottom: clamp(10px,  1.5vw, 20px);
-    padding-bottom: 5px; 
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1); 
+.change {
+    flex-basis: 30%;
+    text-align: right;
+    font-weight: bold;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
+.item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: clamp(0.9em, 1.8vw, 1.4em);
+    padding: clamp(8px, 1.5vw, 15px) clamp(5px, 1vw, 10px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.price {
+    flex-basis: 40%;
+    text-align: right;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.item:last-child {
+    border-bottom: none;
+}
+
+.increase {
+    color: #00ff00;
+}
+
+.decrease {
+    color: #ff0000;
+}
+
+.crypto-carousel, .stock-carousel {
+    display: flex;
+    width: max-content;
+    column-gap: 20px;
+    will-change: transform;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+}
+
+.crypto-carousel {
+    animation-name: scrollLeft;
+    animation-duration: var(--crypto-scroll-speed, 30s);
+}
+
+.stock-carousel {
+    margin-top: 10px;
+    padding-bottom: 5px;
+    animation-name: scrollRight;
+    animation-duration: var(--stock-scroll-speed, 40s);
+}
+
+.crypto-carousel:hover, .stock-carousel:hover {
+    animation-play-state: paused;
+}
 
 .crypto-card {
-    min-width: clamp(180px, 25vw, 250px); 
-    flex-shrink: 0; 
-    margin-right: clamp(10px, 1.5vw, 20px); 
-    background-color: rgba(255, 255, 255, 0.05); 
-    border-radius: 8px; 
+    flex-shrink: 0;
+    min-width: clamp(180px, 25vw, 250px);
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
     padding: clamp(8px, 1vw, 15px);
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); 
-    display: flex; 
-    align-items: center; 
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
 }
 
 .crypto-card .item {
-    padding: 0; 
-    border-bottom: none; 
-    width: 100%; 
-    font-size: clamp(0.9em, 1.6vw, 1.2em); 
+    padding: 0;
+    border-bottom: none;
+    width: 100%;
+    font-size: clamp(0.9em, 1.6vw, 1.2em);
 }
 
+.stock-carousel .crypto-card .item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
 
-@keyframes scroll-left {
-    from {
-        transform: translateX(0); 
+@keyframes scrollLeft {
+    0% {
+        transform: translateX(0);
     }
-    to {
-
-        /* transform: translateX(calc(-1 * (clamp(180px, 25vw, 250px) + clamp(10px, 1.5vw, 20px)) * 3)); */
-        transform: translateX(var(--scroll-distance, -100%));
-
+    100% {
+        transform: translateX(calc(-50% - 10px));
     }
 }
 
-/*küçük ekran modu */
+@keyframes scrollRight {
+    0% {
+        transform: translateX(calc(-50% - 10px));
+    }
+    100% {
+        transform: translateX(0);
+    }
+}
 
 @media (max-width: 600px) {
-
-    .crypto-carousel {
-        animation-duration: 20s; 
-    }
-
     .data-panel {
-        padding: clamp(10px, 4vw, 20px); 
-        width: 95%;     
-        left: 50%; 
-        transform: translateX(-50%); 
-        bottom: 20px; 
-        top: auto; 
-        max-height: 70vh; 
+        padding: clamp(10px, 4vw, 20px);
+        width: 95%;
+        left: 50%;
+        transform: translateX(-50%);
+        bottom: 20px;
+        top: auto;
+        max-height: 70vh;
     }
 
     .category-header {
-        font-size: clamp(1em, 4vw, 1.5em); 
+        font-size: clamp(1em, 4vw, 1.5em);
         margin-bottom: clamp(8px, 2vw, 15px);
     }
 
     .item {
-        font-size: clamp(0.9em, 3.5vw, 1.2em); 
+        font-size: clamp(0.9em, 3.5vw, 1.2em);
         flex-direction: column;
-        align-items: flex-start; 
-        padding-top: clamp(10px, 3vw, 15px); 
-        padding-bottom: clamp(10px, 3vw, 15px); 
+        align-items: flex-start;
+        padding-top: clamp(10px, 3vw, 15px);
+        padding-bottom: clamp(10px, 3vw, 15px);
     }
 
     .symbol {
-        flex-basis: 100%; 
-        font-size: clamp(1em, 4vw, 1.2em); 
-        margin-bottom: 5px; 
+        flex-basis: 100%;
+        font-size: clamp(1em, 4vw, 1.2em);
+        margin-bottom: 5px;
     }
     
     .price {
-        flex-basis: 100%; 
-        text-align: left; 
+        flex-basis: 100%;
+        text-align: left;
         margin-bottom: 5px;
     }
 
     .change {
-        flex-basis: 100%; 
-        text-align: left; 
+        flex-basis: 100%;
+        text-align: left;
     }
 }
