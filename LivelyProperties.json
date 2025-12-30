@@ -54,8 +54,8 @@
     "crypto_ripple": { "type": "checkbox", "value": true, "text": "XRP | ripple" },
     "crypto_dogecoin": { "type": "checkbox", "value": false, "text": "DOGE | dogecoin" },
     "crypto_cardano": { "type": "checkbox", "value": false, "text": "ADA | cardano" },
-    "crypto_binancecoin": { "type": "checkbox", "value": false, "text": "BNB | binancecoin" },
-    "crypto_solana": { "type": "checkbox", "value": false, "text": "SOL | solana" },
+    "crypto_binancecoin": { "type": "checkbox", "value": true, "text": "BNB | binancecoin" },
+    "crypto_solana": { "type": "checkbox", "value": true, "text": "SOL | solana" },
     "crypto_shiba-inu": { "type": "checkbox", "value": false, "text": "SHIB | shiba-inu" },
 
 
