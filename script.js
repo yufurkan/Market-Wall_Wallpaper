@@ -4,11 +4,12 @@ let initialDataLoaded = false;
 let finnhub_api_key = '';
 
 let cryptoCardElements = [];
-const cryptoSymbols = ['bitcoin', 'ethereum', 'ripple'];
-const cryptoDisplayNames = ['BTC', 'ETH', 'XRP'];
+let cryptoSymbols = [];
+let activeCryptoCheckboxes = {};
+let customCryptoString = "";
 
 let stockCardElements = []; 
-let stockSymbols = []; 
+let stockSymbols = [];
 let activeCheckboxes = {}; 
 let customStockString = ""; 
 
@@ -53,6 +54,30 @@ async function fetchImageLists() {
     } catch (error) {
         return false;
     }
+}
+
+function getCachedData(key, ttlSeconds = 55) {
+    const cached = localStorage.getItem(key);
+    if (!cached) return null;
+
+    try {
+        const parsed = JSON.parse(cached);
+        const now = Date.now();
+        if (now - parsed.timestamp < ttlSeconds * 1000) {
+            return parsed.data;
+        }
+    } catch (e) {
+        return null;
+    }
+    return null;
+}
+
+function setCachedData(key, data) {
+    const payload = {
+        timestamp: Date.now(),
+        data: data
+    };
+    localStorage.setItem(key, JSON.stringify(payload));
 }
 
 function updateDisplay(target, price, change) {
@@ -120,13 +145,13 @@ async function changeBackgroundRandomly() {
     }
 }
 
-function createCryptoCard(idPrefix, symbol, displayName) {
+function createCryptoCard(symbol, displayName) {
     const cardDiv = document.createElement('div');
     cardDiv.className = 'crypto-card';
     cardDiv.innerHTML = `
         <div class="item">
             <span class="symbol">${displayName}</span>
-            <span class="price" id="${idPrefix}">Loading...</span>
+            <span class="price">Loading...</span>
             <span class="change">0.00%</span>
         </div>
     `;
@@ -135,7 +160,7 @@ function createCryptoCard(idPrefix, symbol, displayName) {
 
 function createStockCard(symbol) {
     const cardDiv = document.createElement('div');
-    cardDiv.className = 'crypto-card'; 
+    cardDiv.className = 'crypto-card';
     cardDiv.innerHTML = `
         <div class="item">
             <span class="symbol">${symbol}</span>
@@ -146,6 +171,7 @@ function createStockCard(symbol) {
     return cardDiv;
 }
 
+// DEĞIŞTI: Symbol mapping kaldırıldı, placeholder olarak coinId gösteriliyor (API'den symbol gelecek)
 function setupCryptoCarousel() {
     const container = document.querySelector('.crypto-carousel');
     if (!container) return;
@@ -153,13 +179,13 @@ function setupCryptoCarousel() {
     container.innerHTML = '';
     cryptoCardElements = [];
     
-    const originalCards = cryptoSymbols.map((symbol, index) => {
-        const idPrefix = cryptoDisplayNames[index].toLowerCase();
-        const card = createCryptoCard(idPrefix, symbol, cryptoDisplayNames[index]);
+    const originalCards = cryptoSymbols.map(coinId => {
+        const displaySymbol = coinId.toUpperCase();
+        const card = createCryptoCard(coinId, displaySymbol);
         container.appendChild(card);
         
         cryptoCardElements.push({
-            id: idPrefix,
+            id: coinId,
             element: card.querySelector('.price'),
             changeElement: card.querySelector('.change'),
             symbolElement: card.querySelector('.symbol')
@@ -172,8 +198,11 @@ function setupCryptoCarousel() {
         clone.setAttribute('aria-hidden', 'true'); 
         container.appendChild(clone);
         
+        const symbolText = clone.querySelector('.symbol').innerText;
+        const originalId = symbolText.toLowerCase();
+
         cryptoCardElements.push({
-            id: clone.querySelector('.symbol').innerText.toLowerCase(),
+            id: originalId,
             element: clone.querySelector('.price'),
             changeElement: clone.querySelector('.change'),
             symbolElement: clone.querySelector('.symbol')
@@ -217,71 +246,47 @@ function setupStockCarousel() {
     });
 }
 
-function getCachedData(key, ttlSeconds = 55) {
-    const cached = localStorage.getItem(key);
-    if (!cached) return null;
-
-    try {
-        const parsed = JSON.parse(cached);
-        const now = Date.now();
-        if (now - parsed.timestamp < ttlSeconds * 1000) {
-            return parsed.data;
-        }
-    } catch (e) {
-        return null;
-    }
-    return null;
-}
-
-function setCachedData(key, data) {
-    const payload = {
-        timestamp: Date.now(),
-        data: data
-    };
-    localStorage.setItem(key, JSON.stringify(payload));
-}
-
+// DEĞIŞTI: Toplu API çağrısı (/coins/markets), symbol API'den geliyor, custom crypto desteği otomatik
 async function fetchCryptoData() {
+    if (cryptoSymbols.length === 0) return;
+
     const cacheKey = 'crypto_data_cache';
     const cachedData = getCachedData(cacheKey);
 
-    if (cachedData) {
-        const data = cachedData;
-        cryptoSymbols.forEach((symbolKey, index) => {
-            if (data[symbolKey]) {
-                const price = data[symbolKey].usd;
-                const change = data[symbolKey].usd_24h_change;
-                
-                cryptoCardElements
-                    .filter(item => item.id.startsWith(cryptoDisplayNames[index].toLowerCase()))
-                    .forEach(card => updateDisplay(card, price, change));
-            }
+    const processData = (dataArray) => {
+        dataArray.forEach(coin => {
+            const price = coin.current_price;
+            const change = coin.price_change_percentage_24h;
+            const symbol = coin.symbol.toUpperCase();
+
+            cryptoCardElements
+                .filter(item => item.id === coin.id)
+                .forEach(card => {
+                    updateDisplay(card, price, change);
+                    if (card.symbolElement) {
+                        card.symbolElement.innerText = symbol;
+                    }
+                });
         });
+    };
+
+    if (cachedData) {
+        processData(cachedData);
         return; 
     }
 
     try {
-        const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,ripple&vs_currencies=usd&include_24hr_change=true');
+        const ids = cryptoSymbols.join(',');
+        const response = await fetch(`https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${ids}&sparkline=false`);
+        
         if (!response.ok) throw new Error(`CoinGecko API Error: ${response.status}`);
         const data = await response.json();
         
         setCachedData(cacheKey, data);
+        processData(data);
 
-        cryptoSymbols.forEach((symbolKey, index) => {
-            if (data[symbolKey]) {
-                const price = data[symbolKey].usd;
-                const change = data[symbolKey].usd_24h_change;
-                
-                cryptoCardElements
-                    .filter(item => item.id.startsWith(cryptoDisplayNames[index].toLowerCase()))
-                    .forEach(card => updateDisplay(card, price, change));
-            } else {
-                cryptoCardElements
-                    .filter(item => item.id.startsWith(cryptoDisplayNames[index].toLowerCase()))
-                    .forEach(card => showErrorMessagesForElement(card));
-            }
-        });
     } catch (error) {
+        console.error("Crypto Fetch Error:", error);
         cryptoCardElements.forEach(card => showErrorMessagesForElement(card));
     }
 }
@@ -367,6 +372,40 @@ function updateStockList() {
     fetchNasdaqData();
 }
 
+function updateCryptoList() {
+    let combinedList = [];
+
+    for (const [key, isChecked] of Object.entries(activeCryptoCheckboxes)) {
+        if (isChecked && key.startsWith('crypto_')) {
+            const id = key.replace('crypto_', '');
+            combinedList.push(id);
+        }
+    }
+
+    if (customCryptoString && customCryptoString.trim().length > 0) {
+        const customItems = customCryptoString
+            .split(',')
+            .map(s => s.trim().toLowerCase())
+            .filter(s => s.length > 0);
+        
+        combinedList = combinedList.concat(customItems);
+    }
+
+    combinedList = [...new Set(combinedList)];
+
+    if (combinedList.length > 15) {
+        combinedList = combinedList.slice(0, 15);
+    }
+
+    if (combinedList.length === 0) {
+        combinedList = ['bitcoin', 'ethereum', 'ripple']; 
+    }
+
+    cryptoSymbols = combinedList;
+    setupCryptoCarousel();
+    fetchCryptoData();
+}
+
 function livelyPropertyListener(name, val) {
     if (name === "stockScrollSpeed") {
         document.documentElement.style.setProperty('--stock-scroll-speed', val + 's');
@@ -382,10 +421,21 @@ function livelyPropertyListener(name, val) {
         updateStockList();
         return;
     }
-
     if (name.startsWith('stock_')) {
         activeCheckboxes[name] = val;
         updateStockList();
+        return;
+    }
+
+    if (name === "customCryptoList") {
+        customCryptoString = val;
+        updateCryptoList();
+        return;
+    }
+    if (name.startsWith('crypto_')) {
+        activeCryptoCheckboxes[name] = val;
+        updateCryptoList();
+        return;
     }
 }
 
@@ -393,11 +443,14 @@ async function startFetchingData() {
     await loadApiKey(); 
     const imagesLoaded = await fetchImageLists();   
     
-    setupCryptoCarousel();
-    
     if (stockSymbols.length === 0) {
         stockSymbols = ['AAPL', 'MSFT', 'TSLA', 'NVDA', 'AMZN'];
         setupStockCarousel();
+    }
+    
+    if (cryptoSymbols.length === 0) {
+        cryptoSymbols = ['bitcoin', 'ethereum', 'ripple'];
+        setupCryptoCarousel();
     }
 
     if (imagesLoaded) {
