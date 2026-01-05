@@ -4,7 +4,7 @@ A sleek, high-performance, and customizable financial dashboard for your desktop
 
 ![Preview](preview.gif) ## ✨ Features
 
-* **Real-Time Data:** * **Crypto:** Live prices for BTC, ETH, and XRP (via CoinGecko).
+* **Real-Time Data:** * **Crypto:** Live prices for BTC, ETH, XRP and more (via CoinGecko).
     * **Stocks:** Real-time NASDAQ/NYSE data (via Finnhub).
 * **Hybrid Stock Selection:**
     * **Presets:** Choose from categorized popular stocks (Tech, Auto, Finance) via checkboxes.
