@@ -1,28 +1,28 @@
 {
     "nightImages": [
-        "files/night/Amsterdam.jpg",
-        "files/night/Berlin.jpg",
-        "files/night/Brussels.jpg",
-        "files/night/Hong Kong.jpg",
-        "files/night/London.jpg",
-        "files/night/Moscow.jpg",
-        "files/night/Singapore.jpg",
-        "files/night/St.Petersburg.jpg",
-        "files/night/Sydney.jpg",
-        "files/night/Tokyo.jpg",
-        "files/night/Vienna.jpg"
+        "night/Amsterdam.jpg",
+        "night/Berlin.jpg",
+        "night/Brussels.jpg",
+        "night/Hong Kong.jpg",
+        "night/London.jpg",
+        "night/Moscow.jpg",
+        "night/Singapore.jpg",
+        "night/St.Petersburg.jpg",
+        "night/Sydney.jpg",
+        "night/Tokyo.jpg",
+        "night/Vienna.jpg"
     ],
     "morningImages": [
-        "files/morning/Amsterdam.jpg",
-        "files/morning/Berlin.jpg",
-        "files/morning/Brussels.jpg",
-        "files/morning/Hamburg.jpeg",
-        "files/morning/Hong Kong.jpg",
-        "files/morning/Moscow.jpg",
-        "files/morning/Singapore.jpg",
-        "files/morning/St.Petersburg.jpg",
-        "files/morning/Sydney.jpg",
-        "files/morning/Tokyo.jpeg",
-        "files/morning/Vienna.jpg"
+        "morning/Amsterdam.jpg",
+        "morning/Berlin.jpg",
+        "morning/Brussels.jpg",
+        "morning/Hamburg.jpeg",
+        "morning/Hong Kong.jpg",
+        "morning/Moscow.jpg",
+        "morning/Singapore.jpg",
+        "morning/St.Petersburg.jpg",
+        "morning/Sydney.jpg",
+        "morning/Tokyo.jpeg",
+        "morning/Vienna.jpg"
     ]
 }
