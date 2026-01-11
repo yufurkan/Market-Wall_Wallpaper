@@ -129,6 +129,7 @@ async function changeBackgroundRandomly() {
     const currentHour = now.getHours(); 
     let selectedList;
 
+
     if (currentHour >= 6 && currentHour < 18) { 
         selectedList = morningImages;
     } else {
@@ -141,7 +142,20 @@ async function changeBackgroundRandomly() {
     const randomImage = selectedList[randomIndex];
 
     if (randomImage) {
+
         document.body.style.backgroundImage = `url('${randomImage}')`;
+        
+
+        const filename = randomImage.split('/').pop(); 
+        
+
+        const locationName = filename.split('.')[0]; 
+
+
+        const locationElement = document.getElementById('location-name');
+        if (locationElement) {
+            locationElement.innerText = locationName.replace(/-/g, ' ').toUpperCase();
+        }
     }
 }
 

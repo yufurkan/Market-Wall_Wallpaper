@@ -1,35 +1,28 @@
 {
-    "nightImages":  [
-                        "files/Amsterdam-N.jpg",
-                        "files/Berlin-N.jpg",
-                        "files/Berlin-N2.jpg",
-                        "files/Brussels-N.jpg",
-                        "files/Hong Kong-N.jpg",
-                        "files/Londra-N.jpg",
-                        "files/Moscow-N.jpg",
-                        "files/Singapore-N.jpg",
-                        "files/St.Petersburg-N.jpg",
-                        "files/Sydney-N.jpg",
-                        "files/Sydney-N2.jpg",
-                        "files/Tokyo-N.jpg",
-                        "files/Vienna-N.jpg",
-                        "files/Vienna-N2.jpg"
-                    ],
-    "morningImages":  [
-                          "files/Amsterdam-M.jpg",
-                          "files/Berlin-M.jpg",
-                          "files/Berlin-M2.jpg",
-                          "files/Berlin-M3.jpg",
-                          "files/Brussels-M.jpg",
-                          "files/Hamburg-M.jpeg",
-                          "files/Hong Kong-M.jpg",
-                          "files/Moscow-M.jpg",
-                          "files/Singapore-M.jpg",
-                          "files/St.Petersburg-M.jpg",
-                          "files/St.Petersburg-M2.jpg",
-                          "files/Sydney-M.jpg",
-                          "files/Sydney-M2.jpg",
-                          "files/Tokyo-M.jpeg",
-                          "files/Vienna-M.jpg"
-                      ]
+    "nightImages": [
+        "night/Amsterdam.jpg",
+        "night/Berlin.jpg",
+        "night/Brussels.jpg",
+        "night/Hong Kong.jpg",
+        "night/London.jpg",
+        "night/Moscow.jpg",
+        "night/Singapore.jpg",
+        "night/St.Petersburg.jpg",
+        "night/Sydney.jpg",
+        "night/Tokyo.jpg",
+        "night/Vienna.jpg"
+    ],
+    "morningImages": [
+        "morning/Amsterdam.jpg",
+        "morning/Berlin.jpg",
+        "morning/Brussels.jpg",
+        "morning/Hamburg.jpeg",
+        "morning/Hong Kong.jpg",
+        "morning/Moscow.jpg",
+        "morning/Singapore.jpg",
+        "morning/St.Petersburg.jpg",
+        "morning/Sydney.jpg",
+        "morning/Tokyo.jpeg",
+        "morning/Vienna.jpg"
+    ]
 }
