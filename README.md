@@ -1,36 +1,87 @@
-# 📈 Market Wall - Live Wallpaper
+<div align="center">
 
-A sleek, high-performance, and customizable financial dashboard for your desktop. Designed for **Lively Wallpaper**, this project displays real-time Cryptocurrency and Stock Market data with a smooth, infinite-scrolling ticker.
+  # 🏙️ Market Wall
+  **Professional Financial Terminal Wallpaper for Lively**
 
-![Preview](preview.gif) ## ✨ Features
+  [![License](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](LICENSE)
+  [![Platform](https://img.shields.io/badge/Platform-Lively%20Wallpaper-blue.svg?style=for-the-badge)](https://rocksdanister.github.io/lively/)
+  [![Version](https://img.shields.io/badge/Version-1.0.0-orange.svg?style=for-the-badge)](releases)
 
-* **Real-Time Data:** * **Crypto:** Live prices for BTC, ETH, XRP and more (via CoinGecko).
-    * **Stocks:** Real-time NASDAQ/NYSE data (via Finnhub).
-* **Hybrid Stock Selection:**
-    * **Presets:** Choose from categorized popular stocks (Tech, Auto, Finance) via checkboxes.
-    * **Custom:** Add any stock symbol manually (e.g., `AMD, INTC`) via a text input.
-* **Performance Optimized:** Uses GPU-accelerated **CSS Keyframes** for smooth scrolling animations (no CPU-heavy JS loops).
-* **Multi-Monitor Support:** Smart **Caching System (localStorage)** prevents API rate limits when using multiple monitors/instances.
-* **Dynamic Backgrounds:** Automatically switches between Morning and Night wallpapers based on local time (06:00 - 18:00).
-* **Customizable:** Adjust scroll speeds and visible stocks directly from the Lively Wallpaper menu.
+  <p align="center">
+    Turn your desktop into a live trading floor. Real-time Crypto, NASDAQ Stocks, and dynamic 4K cityscapes.
+    <br />
+    <br />
+    <a href="https://github.com/yufurkan/Market-Wall_Wallpaper/releases/latest"><strong>📥 Download Latest Version</strong></a>
+    ·
+    <a href="https://github.com/yufurkan/Market-Wall_Wallpaper/issues">🐞 Report Bug</a>
+  </p>
+
+  
+  ![Preview](files/Example2.png) 
+  
+
+</div>
+
+<br />
+
+## ✨ Features
+
+| Feature | Description |
+| :--- | :--- |
+| **🌍 Dynamic Atmosphere** | Automatically switches between **Morning** and **Night** 4K cityscapes. |
+| **💎 Live Crypto Ticker** | Real-time tracking for Bitcoin, Ethereum, Solana, and more via **CoinGecko API**. (Plug & Play). |
+| **📉 NASDAQ Stocks** | Track major tech stocks (Apple, Tesla, NVIDIA) using your own **Finnhub API key**. |
+| **📺 Broadcast UI** | A clean, "Bloomberg-style" lower-third overlay showing live location and market status. |
+
 
 ---
 
-## 🚀 Installation & Setup
+## 🚀 Installation
 
-### 1. Prerequisites
-* [Lively Wallpaper](https://rocksdanister.github.io/lively/) installed on Windows.
-* A free API Key from [Finnhub.io](https://finnhub.io/).
+### 1️⃣ Prerequisite
+Download and install [Lively Wallpaper](https://rocksdanister.github.io/lively/) (Free & Open Source).
 
-### 2. Get the Code
-Clone this repository or download the ZIP file.
+### 2️⃣ Import the Project
+1. Go to the [**Releases**](https://github.com/yufurkan/Market-Wall_Wallpaper/releases) page.
+2. Download the `Source code (zip)` of the latest version.
+3. Unzip the folder.
+4. Open the folder and drag **`index.html`** into the **Lively Wallpaper** window.
+5. *Done! Crypto data works immediately.*
 
-```bash
-git clone [https://github.com/YourUsername/Market-Wall_Wallpaper.git](https://github.com/YourUsername/Market-Wall_Wallpaper.git)
+---
+
+## 🔑 Stock API Setup 
+*Crypto works out of the box. Follow these steps only if you want Stock Data (NASDAQ).*
+
+1. Get a **FREE API Key** from [finnhub.io](https://finnhub.io/).
+2. Navigate to the wallpaper installation folder (Right click in Lively -> Open File Location).
+3. Find the file named `api_key.json`.
+4. Open it with Notepad and paste your key:
+
+<br>
+
+```json
+{
+  "api_key": "YOUR_FINNHUB_KEY_HERE"
+}
 ```
+Note: Do not share your api_key.json file publicly. The system caches data to ensure you stay within free tier limits.
+
+## ⚙️ Customization
+You can tweak settings directly inside Lively Wallpaper's "Customize" menu:
+
+Custom Symbols: Add extra stocks (e.g., AMD, INTC) or Cryptos (e.g., pepe, dogecoin).
+
+Scroll Speed: Adjust how fast the tickers move.
+
+Visibility: Toggle specific coins or stocks on/off.
+
+## 🛠️ Tech Stack
+Core: HTML5, CSS3 (Flexbox/Grid), JavaScript (ES6+).
+
+APIs: CoinGecko (No Key), Finnhub (Key Required).
+
+Storage: LocalStorage (for Caching).
 
 
-### It is still under development. Incubation
-
-İt looks like this
-<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/f028e59e-7feb-4d69-b7c4-e73fe5515387" />
+<div align="center"> <sub>Created by <a href="https://github.com/yufurkan">Yusuf Furkan</a></sub> </div>

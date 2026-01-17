@@ -47,16 +47,24 @@
         "type": "textbox",
         "value": "",
         "text": "Add Extra Cryptos",
-        "desc": "Enter CoinGecko IDs separated by comma (e.g. solana, polkadot)"
+        "desc": "Enter CoinGecko IDs separated by comma (e.g. sui, aptos, near)"
     },
-    "crypto_bitcoin": { "type": "checkbox", "value": true, "text": "BTC | bitcoin" },
-    "crypto_ethereum": { "type": "checkbox", "value": true, "text": "ETH | ethereum" },
-    "crypto_ripple": { "type": "checkbox", "value": true, "text": "XRP | ripple" },
-    "crypto_dogecoin": { "type": "checkbox", "value": false, "text": "DOGE | dogecoin" },
-    "crypto_cardano": { "type": "checkbox", "value": false, "text": "ADA | cardano" },
-    "crypto_binancecoin": { "type": "checkbox", "value": true, "text": "BNB | binancecoin" },
-    "crypto_solana": { "type": "checkbox", "value": true, "text": "SOL | solana" },
-    "crypto_shiba-inu": { "type": "checkbox", "value": false, "text": "SHIB | shiba-inu" },
+    
+    "crypto_bitcoin": { "type": "checkbox", "value": true, "text": "BTC | Bitcoin" },
+    "crypto_ethereum": { "type": "checkbox", "value": true, "text": "ETH | Ethereum" },
+    "crypto_binancecoin": { "type": "checkbox", "value": true, "text": "BNB | BNB" },
+    "crypto_solana": { "type": "checkbox", "value": true, "text": "SOL | Solana" },
+    "crypto_ripple": { "type": "checkbox", "value": true, "text": "XRP | Ripple" },
+    "crypto_cardano": { "type": "checkbox", "value": false, "text": "ADA | Cardano" },
+    "crypto_avalanche-2": { "type": "checkbox", "value": false, "text": "AVAX | Avalanche" },
+    "crypto_polkadot": { "type": "checkbox", "value": false, "text": "DOT | Polkadot" },
+    "crypto_chainlink": { "type": "checkbox", "value": false, "text": "LINK | Chainlink" },
+    "crypto_matic-network": { "type": "checkbox", "value": false, "text": "MATIC | Polygon" },
+    "crypto_litecoin": { "type": "checkbox", "value": false, "text": "LTC | Litecoin" },
+    "crypto_dogecoin": { "type": "checkbox", "value": false, "text": "DOGE | Dogecoin" },
+    "crypto_shiba-inu": { "type": "checkbox", "value": false, "text": "SHIB | Shiba Inu" },
+    "crypto_pepe": { "type": "checkbox", "value": true, "text": "PEPE | Pepe" },
+    "crypto_fetch-ai": { "type": "checkbox", "value": false, "text": "FET | Fetch.ai" },
 
 
     "header_speed": { "type": "label", "value": "--- ANIMATION SPEED ---" },
